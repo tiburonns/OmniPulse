@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <rect width="1024" height="1024" fill="#071B33"/>
+
+  <!-- Broken outer O: visibility beyond a single radio protocol. -->
+  <path
+    d="M 263 683 A 320 320 0 0 1 742 276"
+    fill="none"
+    stroke="#2979FF"
+    stroke-width="64"
+    stroke-linecap="round"
+  />
+  <path
+    d="M 790 369 A 320 320 0 0 1 369 790"
+    fill="none"
+    stroke="#2979FF"
+    stroke-width="64"
+    stroke-linecap="round"
+  />
+
+  <!-- Measurement orbit and fixed observations. -->
+  <circle cx="512" cy="512" r="167" fill="none" stroke="#42D6E8" stroke-width="54"/>
+  <circle cx="355" cy="455" r="44" fill="#42D6E8"/>
+  <circle cx="669" cy="569" r="44" fill="#42D6E8"/>
+  <circle cx="512" cy="512" r="57" fill="#42D6E8"/>
+
+  <!-- Cyan = live observation; amber = anomaly or action point. -->
+  <circle cx="786" cy="305" r="48" fill="#42D6E8"/>
+  <circle cx="303" cy="753" r="48" fill="#FFB547"/>
+</svg>
