@@ -1,0 +1,3 @@
+# pioarduino/esptool 5 currently resolves cryptography 50 from source on
+# Intel macOS. Version 46 provides a compatible prebuilt wheel.
+cryptography>=45.0.3,<47
