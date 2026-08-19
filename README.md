@@ -2,7 +2,7 @@
 
 Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubrimientos Bluetooth Low Energy (BLE), analiza redes Wi-Fi mediante sensores autorizados y conserva la ubicación de cada observación.
 
-[Descargar OmniPulse 1.0](https://github.com/tiburonns/OmniPulse/releases/tag/v1.0.0) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
+[Descargar OmniPulse 1.0.1](https://github.com/tiburonns/OmniPulse/releases/tag/v1.0.1) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
 
 ## Funciones principales
 
@@ -40,6 +40,12 @@ open OmniPulse.xcodeproj
 Selecciona un equipo de firma y cambia `PRODUCT_BUNDLE_IDENTIFIER` en `project.yml` si el identificador `com.tiburonns.OmniPulse` no está disponible. Después de modificar archivos, vuelve a ejecutar `xcodegen generate`.
 
 El repositorio no contiene un Team ID, certificados ni perfiles. Cada persona debe seleccionar su propio equipo de desarrollo en Xcode.
+
+## AltStore y Sideloadly
+
+La IPA pública es una variante para iPhone/iPad sin el paquete complementario de Apple Watch. Esto evita un cierre de AltStore 2.2.1 al firmar ejecutables `arm64_32`. La aplicación completa para iPhone + Apple Watch permanece disponible al compilar con Xcode y para una futura distribución mediante TestFlight o App Store.
+
+Consulta la [guía de instalación y diagnóstico](docs/ALTSTORE.md). El paquete público se genera de forma reproducible con `script/build_altstore_ipa.sh` y se distribuye sin certificados, perfiles ni Team ID.
 
 ## Estructura
 
