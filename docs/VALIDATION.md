@@ -1,6 +1,6 @@
 # Validación de entrega
 
-## Verificado el 10 de agosto de 2026
+## Verificado el 18 de agosto de 2026
 
 - Los `Info.plist` y `source.json` son válidos.
 - La compilación de iOS para simulador terminó correctamente.
@@ -10,6 +10,9 @@
 - El firmware ESP8266 1.1.0 compiló correctamente para `d1_mini` y `nodemcuv2`.
 - Los binarios de firmware actualizados están incluidos en los recursos de la aplicación.
 - La búsqueda automatizada no encontró perfiles de aprovisionamiento, certificados, claves privadas, credenciales ni identificadores del equipo de desarrollo.
+- Los reportes de cierre del iPhone localizaron el fallo de AltStore 2.2.1 en `ldid::Allocate` al firmar la arquitectura Watch `arm64_32` incluida en la IPA 1.0.
+- La IPA 1.0.1 para instalación lateral contiene solo `Payload/OmniPulse.app`, un ejecutable iOS `arm64`, y no contiene `Watch/`, `_CodeSignature`, perfiles de aprovisionamiento ni `__MACOSX`.
+- `OmniPulse-AltStore-v1.0.1.ipa` pesa 5,703,531 bytes y su SHA-256 es `f3eff7171b4096649097f419297040d901cfcbd53476df934d138a1700ae45aa`.
 
 ## Cómo repetir la validación
 
@@ -24,6 +27,14 @@ xcodebuild -project OmniPulse.xcodeproj -scheme OmniPulse \
 ```
 
 También puede ejecutarse el flujo de GitHub Actions incluido en `.github/workflows/ios.yml` para generar y compilar el proyecto en un runner macOS.
+
+La IPA específica para AltStore/Sideloadly se genera y valida con:
+
+```sh
+./script/build_altstore_ipa.sh
+```
+
+Esta variante omite únicamente la app complementaria Watch del paquete lateral. El esquema completo `OmniPulse` conserva su dependencia de `OmniPulseWatch` para Xcode, TestFlight y App Store.
 
 ## Prueba en iPhone
 

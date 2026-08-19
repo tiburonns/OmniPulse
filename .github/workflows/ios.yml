@@ -30,5 +30,7 @@ jobs:
           -destination 'generic/platform=macOS'
           CODE_SIGNING_ALLOWED=NO
           build
+      - name: Build and validate AltStore IPA
+        run: ./script/build_altstore_ipa.sh
       - name: Validate AltStore source
         run: python3 -m json.tool source.json > /dev/null

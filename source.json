@@ -17,12 +17,12 @@
       "category": "utilities",
       "versions": [
         {
-          "version": "1.0",
-          "buildVersion": "1",
-          "date": "2026-08-11T00:47:12Z",
-          "localizedDescription": "Primera versión pública para AltStore y Sideloadly.",
-          "downloadURL": "https://github.com/tiburonns/OmniPulse/releases/download/v1.0.0/OmniPulse-Unsigned-v1.0.ipa",
-          "size": 6765704,
+          "version": "1.0.1",
+          "buildVersion": "2",
+          "date": "2026-08-19T01:50:12Z",
+          "localizedDescription": "Corrige el cierre de AltStore durante la firma. Esta IPA conserva la aplicación completa del iPhone y omite únicamente el paquete complementario de Apple Watch para evitar el fallo arm64_32 del firmador de AltStore 2.2.1.",
+          "downloadURL": "https://github.com/tiburonns/OmniPulse/releases/download/v1.0.1/OmniPulse-AltStore-v1.0.1.ipa",
+          "size": 5703531,
           "minOSVersion": "17.0",
           "entitlements": [],
           "privacy": {
