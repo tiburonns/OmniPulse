@@ -12,19 +12,30 @@ struct MacSettingsView: View {
     var body: some View {
         Form {
             Section("Apariencia") {
-                Picker("Modo", selection: $appearanceMode) {
-                    ForEach(AppAppearanceMode.allCases) { mode in
-                        Text(mode.title).tag(mode.rawValue)
-                    }
-                }
-                .pickerStyle(.segmented)
-
                 Picker("Tema", selection: presetBinding) {
-                    ForEach(AppThemePreset.allCases) { preset in
-                        Label(preset.title, systemImage: preset.systemImage)
-                            .tag(preset)
+                    Label(AppThemePreset.system.title, systemImage: AppThemePreset.system.systemImage)
+                        .tag(AppThemePreset.system)
+
+                    Section("Modo oscuro") {
+                        ForEach(AppThemePreset.darkPresets) { preset in
+                            Label(preset.title, systemImage: preset.systemImage)
+                                .tag(preset)
+                        }
                     }
+
+                    Section("Modo claro") {
+                        ForEach(AppThemePreset.lightPresets) { preset in
+                            Label(preset.title, systemImage: preset.systemImage)
+                                .tag(preset)
+                        }
+                    }
+
+                    Divider()
+
+                    Label(AppThemePreset.custom.title, systemImage: AppThemePreset.custom.systemImage)
+                        .tag(AppThemePreset.custom)
                 }
+                .pickerStyle(.menu)
 
                 MacThemePreviewCard(
                     accent: appTheme.accent,
@@ -36,7 +47,7 @@ struct MacSettingsView: View {
                     warning: appTheme.warning
                 )
 
-                Text("Los cambios de modo y tema se aplican inmediatamente a todas las ventanas.")
+                Text("Automático sigue la apariencia del sistema. Los demás temas están optimizados y separados para modo oscuro o modo claro.")
                     .font(.caption)
                     .foregroundStyle(appTheme.secondaryText)
             }
@@ -46,6 +57,7 @@ struct MacSettingsView: View {
                     Button("Usar y editar mi tema", systemImage: "paintpalette.fill") {
                         customPalette = appTheme.customPalette
                         appTheme.select(.custom)
+                        synchronizeAppearance(with: .custom)
                     }
                 } else {
                     colorGrid
@@ -57,6 +69,7 @@ struct MacSettingsView: View {
                         Button("Restaurar colores", role: .destructive) {
                             customPalette = .defaultCustom
                             appTheme.saveCustom(customPalette)
+                            synchronizeAppearance(with: .custom)
                         }
                     }
                 }
@@ -119,6 +132,7 @@ struct MacSettingsView: View {
                     customPalette = appTheme.customPalette
                 }
                 appTheme.select(preset)
+                synchronizeAppearance(with: preset)
             }
         )
     }
@@ -132,9 +146,22 @@ struct MacSettingsView: View {
             set: { color in
                 customPalette[keyPath: keyPath] = color.hexString
                 appTheme.saveCustom(customPalette)
+                synchronizeAppearance(with: .custom)
             }
         ), supportsOpacity: false)
         .frame(minWidth: 190)
+    }
+
+    private func synchronizeAppearance(with preset: AppThemePreset) {
+        if let mode = preset.appearanceMode {
+            appearanceMode = mode.rawValue
+        } else if preset == .custom {
+            appearanceMode = appTheme.suggestedColorScheme == .dark
+                ? AppAppearanceMode.dark.rawValue
+                : AppAppearanceMode.light.rawValue
+        } else {
+            appearanceMode = AppAppearanceMode.system.rawValue
+        }
     }
 }
 

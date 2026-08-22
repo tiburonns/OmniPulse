@@ -2,7 +2,7 @@
 
 Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubrimientos Bluetooth Low Energy (BLE), analiza redes Wi-Fi mediante sensores autorizados y conserva la ubicación de cada observación.
 
-[Descargar OmniPulse 1.0.1](https://github.com/tiburonns/OmniPulse/releases/tag/v1.0.1) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
+[Descargar OmniPulse 1.1.0](https://github.com/tiburonns/OmniPulse/releases/tag/v1.1.0) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
 
 ## Funciones principales
 
@@ -15,7 +15,7 @@ Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubri
 - Conexión simultánea con hasta ocho sensores ESP32 y actualización OTA por BLE.
 - Soporte Wi-Fi local para NodeMCU ESP8266, Wemos/LOLIN D1 mini y placas similares.
 - Firmware incluido para ESP32, ESP32-CAM, ESP32-S3, XIAO ESP32S3/Sense, ESP32-C5, ESP8266 y D1 mini.
-- Temas del sistema, temas incluidos y editor de paleta personalizada.
+- Apariencia automática, seis temas oscuros, ocho temas claros y editor de paleta personalizada.
 - Atajos de Siri (iOS 18+) para abrir Escanear, Historial o Mapa.
 
 El firmware no inspecciona tráfico, no intenta descifrar redes ni transmite direcciones MAC en claro. Los identificadores de anuncios BLE se vuelven seudónimos efímeros por sesión. Úsalo únicamente en espacios, redes y dispositivos que administres o para los que tengas autorización.
