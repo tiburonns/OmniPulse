@@ -28,8 +28,8 @@ targets:
     info:
       path: OmniPulse/Resources/Info.plist
       properties:
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "1.1.0"
+        CFBundleVersion: "3"
         NSBluetoothAlwaysUsageDescription: OmniPulse utiliza Bluetooth para detectar dispositivos y sensores cercanos.
         NSBluetoothPeripheralUsageDescription: OmniPulse utiliza Bluetooth para comunicarse con sensores cercanos.
         NSLocationWhenInUseUsageDescription: OmniPulse utiliza tu ubicación únicamente cuando decides asociarla a una detección o leer la red Wi-Fi conectada.
@@ -83,8 +83,8 @@ targets:
       path: OmniPulseMac/Info.plist
       properties:
         CFBundleDisplayName: OmniPulse
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "1.1.0"
+        CFBundleVersion: "3"
         LSApplicationCategoryType: public.app-category.utilities
         NSBluetoothAlwaysUsageDescription: OmniPulse utiliza Bluetooth para detectar dispositivos y sensores ESP32 cercanos.
         NSLocationUsageDescription: OmniPulse utiliza la ubicación para asociarla a detecciones cuando activas el modo vehículo.
@@ -113,8 +113,8 @@ targets:
       path: OmniPulseWatch/Info.plist
       properties:
         CFBundleDisplayName: OmniPulse
-        CFBundleShortVersionString: "1.0.1"
-        CFBundleVersion: "2"
+        CFBundleShortVersionString: "1.1.0"
+        CFBundleVersion: "3"
         WKApplication: true
         WKCompanionAppBundleIdentifier: com.tiburonns.OmniPulse
     settings:

@@ -165,23 +165,19 @@ private struct AppearanceSettingsSection: View {
     @AppStorage("appearanceMode") private var appearanceMode = AppAppearanceMode.system.rawValue
 
     var body: some View {
-        Section("Apariencia") {
-            Picker("Modo", selection: $appearanceMode) {
-                ForEach(AppAppearanceMode.allCases) { mode in
-                    Text(mode.title).tag(mode.rawValue)
-                }
-            }
-            .pickerStyle(.segmented)
-
-            Picker("Tema", selection: themeSelection) {
-                ForEach(AppThemePreset.allCases) { preset in
-                    Label {
-                        Text(preset.title)
-                    } icon: {
-                        Image(systemName: preset == appTheme.selectedPreset ? "checkmark.circle.fill" : preset.systemImage)
-                            .foregroundStyle(previewColor(for: preset))
+        Section {
+            NavigationLink {
+                ThemeSelectionView(appearanceMode: $appearanceMode)
+            } label: {
+                LabeledContent {
+                    HStack(spacing: 8) {
+                        Image(systemName: appTheme.selectedPreset.systemImage)
+                            .foregroundStyle(appTheme.accent)
+                        Text(appTheme.selectedPreset.title)
+                            .foregroundStyle(appTheme.primaryText)
                     }
-                    .tag(preset)
+                } label: {
+                    Label("Tema", systemImage: "paintpalette")
                 }
             }
 
@@ -209,26 +205,146 @@ private struct AppearanceSettingsSection: View {
                 UserDefaults.standard.set(AppAccent.indigo.rawValue, forKey: "accentColor")
                 appTheme.select(.system)
             }
+        } header: {
+            Text("Apariencia")
+        } footer: {
+            Text("Automático sigue la apariencia del sistema. Los demás temas están optimizados y separados para modo oscuro o modo claro.")
         }
     }
+}
 
-    private var themeSelection: Binding<AppThemePreset> {
-        Binding(
-            get: { appTheme.selectedPreset },
-            set: { appTheme.select($0) }
-        )
+private struct ThemeSelectionView: View {
+    @Environment(AppTheme.self) private var appTheme
+    @Binding var appearanceMode: String
+
+    var body: some View {
+        List {
+            Section {
+                presetRow(.system)
+            } header: {
+                Text("Automático")
+            } footer: {
+                Text("Adapta colores y contraste al modo configurado en el iPhone.")
+            }
+
+            Section {
+                ForEach(AppThemePreset.darkPresets) { preset in
+                    presetRow(preset)
+                }
+            } header: {
+                Label("Modo oscuro", systemImage: AppThemeCategory.dark.systemImage)
+            }
+
+            Section {
+                ForEach(AppThemePreset.lightPresets) { preset in
+                    presetRow(preset)
+                }
+            } header: {
+                Label("Modo claro", systemImage: AppThemeCategory.light.systemImage)
+            }
+
+            Section("Personalizado") {
+                presetRow(.custom)
+
+                NavigationLink {
+                    CustomThemeEditorView()
+                } label: {
+                    Label("Editar todos los colores", systemImage: "slider.horizontal.3")
+                }
+                .listRowBackground(appTheme.surface)
+            }
+        }
+        .navigationTitle("Temas")
+        .navigationBarTitleDisplayMode(.inline)
+        .scrollContentBackground(.hidden)
+        .background(appTheme.background)
     }
 
-    private func previewColor(for preset: AppThemePreset) -> Color {
-        if preset == .system { return .indigo }
-        let palette = preset == .custom ? appTheme.customPalette : preset.palette
-        return palette.flatMap { Color(hex: $0.accent) } ?? .indigo
+    private func presetRow(_ preset: AppThemePreset) -> some View {
+        ThemePresetRow(
+            preset: preset,
+            palette: preset == .custom ? appTheme.customPalette : preset.palette,
+            isSelected: preset == appTheme.selectedPreset
+        ) {
+            withAnimation(.easeInOut(duration: 0.2)) {
+                appTheme.select(preset)
+                synchronizeAppearance(with: preset)
+            }
+        }
+        .listRowBackground(appTheme.surface)
+    }
+
+    private func synchronizeAppearance(with preset: AppThemePreset) {
+        if let mode = preset.appearanceMode {
+            appearanceMode = mode.rawValue
+        } else {
+            appearanceMode = appTheme.suggestedColorScheme == .dark
+                ? AppAppearanceMode.dark.rawValue
+                : AppAppearanceMode.light.rawValue
+        }
+    }
+}
+
+private struct ThemePresetRow: View {
+    let preset: AppThemePreset
+    let palette: ThemePalette?
+    let isSelected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 12) {
+                Image(systemName: preset.systemImage)
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(accent)
+                    .frame(width: 24)
+
+                Text(preset.title)
+                    .foregroundStyle(.primary)
+
+                Spacer(minLength: 12)
+
+                HStack(spacing: -3) {
+                    ForEach(Array(swatches.enumerated()), id: \.offset) { _, color in
+                        Circle()
+                            .fill(color)
+                            .frame(width: 17, height: 17)
+                            .overlay {
+                                Circle().stroke(.white.opacity(0.7), lineWidth: 1)
+                            }
+                    }
+                }
+
+                Image(systemName: "checkmark")
+                    .font(.body.weight(.semibold))
+                    .foregroundStyle(accent)
+                    .opacity(isSelected ? 1 : 0)
+                    .accessibilityHidden(!isSelected)
+            }
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    private var accent: Color {
+        palette.flatMap { Color(hex: $0.accent) } ?? .indigo
+    }
+
+    private var swatches: [Color] {
+        guard let palette else { return [.indigo, .blue, .teal] }
+        return [
+            Color(hex: palette.accent) ?? .indigo,
+            Color(hex: palette.background) ?? .clear,
+            Color(hex: palette.surface) ?? .clear
+        ]
     }
 }
 
 private struct CustomThemeEditorView: View {
     @Environment(AppTheme.self) private var appTheme
     @Environment(\.dismiss) private var dismiss
+    @AppStorage("appearanceMode") private var appearanceMode = AppAppearanceMode.system.rawValue
 
     @State private var draft = ThemePalette.defaultCustom
 
@@ -291,6 +407,9 @@ private struct CustomThemeEditorView: View {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Guardar") {
                     appTheme.saveCustom(draft)
+                    appearanceMode = appTheme.suggestedColorScheme == .dark
+                        ? AppAppearanceMode.dark.rawValue
+                        : AppAppearanceMode.light.rawValue
                     dismiss()
                 }
                 .fontWeight(.semibold)

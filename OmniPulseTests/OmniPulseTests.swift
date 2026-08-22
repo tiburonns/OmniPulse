@@ -126,6 +126,31 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertEqual(restored.strongSignal, "00FF66")
     }
 
+    func testThemePresetsAreSeparatedByAppearance() {
+        XCTAssertEqual(
+            AppThemePreset.darkPresets.map(\.rawValue),
+            ["dark", "slate", "moonlight", "midnight", "ember", "nord"]
+        )
+        XCTAssertEqual(
+            AppThemePreset.lightPresets.map(\.rawValue),
+            ["light", "indigo", "sunshine", "ocean", "forest", "rose", "lavender", "monochrome"]
+        )
+        XCTAssertTrue(AppThemePreset.darkPresets.allSatisfy {
+            $0.category == .dark && $0.appearanceMode == .dark && $0.palette != nil
+        })
+        XCTAssertTrue(AppThemePreset.lightPresets.allSatisfy {
+            $0.category == .light && $0.appearanceMode == .light && $0.palette != nil
+        })
+    }
+
+    func testLegacyThemePresetMigration() {
+        XCTAssertEqual(AppThemePreset.restored(from: "sunset"), .sunshine)
+        XCTAssertEqual(AppThemePreset.restored(from: "cyber"), .midnight)
+        XCTAssertEqual(AppThemePreset.restored(from: "graphite"), .slate)
+        XCTAssertEqual(AppThemePreset.restored(from: "ocean"), .ocean)
+        XCTAssertEqual(AppThemePreset.restored(from: "unknown"), .system)
+    }
+
     func testChannelAnalyzerRecommendsTheLeastCongestedNonOverlappingChannel() {
         let samples = [
             WiFiChannelSample(identifier: "ap-1", name: "Oficina", channel: 1, rssi: -38),

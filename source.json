@@ -17,6 +17,22 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "1.1.0",
+          "buildVersion": "3",
+          "date": "2026-08-22T18:46:57Z",
+          "localizedDescription": "Añade una nueva biblioteca de apariencia con seis temas oscuros y ocho claros, selección automática y un editor de paleta personalizada. Las preferencias anteriores se migran automáticamente y la personalización se aplica también a la versión para Mac.",
+          "downloadURL": "https://github.com/tiburonns/OmniPulse/releases/download/v1.1.0/OmniPulse-AltStore-v1.1.0.ipa",
+          "size": 5720705,
+          "minOSVersion": "17.0",
+          "entitlements": [],
+          "privacy": {
+            "NSBluetoothAlwaysUsageDescription": "OmniPulse utiliza Bluetooth para detectar dispositivos y sensores cercanos.",
+            "NSBluetoothPeripheralUsageDescription": "OmniPulse utiliza Bluetooth para comunicarse con sensores cercanos.",
+            "NSLocalNetworkUsageDescription": "OmniPulse se conecta directamente a sensores ESP8266 autorizados para recibir escaneos Wi-Fi.",
+            "NSLocationWhenInUseUsageDescription": "OmniPulse utiliza tu ubicación únicamente cuando decides asociarla a una detección o leer la red Wi-Fi conectada."
+          }
+        },
+        {
           "version": "1.0.1",
           "buildVersion": "2",
           "date": "2026-08-19T01:50:12Z",
