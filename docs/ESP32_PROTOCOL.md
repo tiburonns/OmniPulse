@@ -4,7 +4,7 @@
 
 El sensor anuncia el servicio BLE `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A101` y publica lotes UTF-8 JSON por notificación en la característica `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A102`.
 
-Desde el firmware 1.3.0 también ofrece control OTA en `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A103` y bloques binarios en `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A104`. La aplicación envía tamaño y SHA-256 antes de transferir, y el sensor solo activa la nueva imagen después de verificar ambos.
+El código contiene un transporte OTA experimental en las características `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A103` y `7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A104`, pero está desactivado en las compilaciones distribuidas. Solo puede exponerse en una compilación explícita de laboratorio con `OMNIPULSE_ENABLE_LAB_OTA=1`, sobre un enlace BLE cifrado y autenticado. SHA-256 verifica la transferencia, no la procedencia del firmware; no se habilitará en producción hasta añadir firma, anti-rollback y recuperación.
 
 La app futura debe filtrar por el UUID de servicio, suscribirse a notificaciones y rechazar cargas que no cumplan este contrato. Los lotes se envían solo tras una conexión iniciada por la persona usuaria.
 

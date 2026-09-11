@@ -12,7 +12,7 @@ Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubri
 - Proyectos de levantamiento, análisis y recomendación de canales de 2.4/5 GHz.
 - Informes PDF y exportación CSV iniciados por la persona usuaria.
 - Identificación BLE de fabricantes, categorías, iBeacon y Eddystone.
-- Conexión simultánea con hasta ocho sensores ESP32 y actualización OTA por BLE.
+- Conexión simultánea con hasta ocho sensores ESP32. La OTA BLE experimental está desactivada en las compilaciones distribuidas hasta incorporar firma y anti-rollback.
 - Soporte Wi-Fi local para NodeMCU ESP8266, Wemos/LOLIN D1 mini y placas similares.
 - Firmware incluido para ESP32, ESP32-CAM, ESP32-S3, XIAO ESP32S3/Sense, ESP32-C5, ESP8266 y D1 mini.
 - Apariencia automática, seis temas oscuros, ocho temas claros y editor de paleta personalizada.

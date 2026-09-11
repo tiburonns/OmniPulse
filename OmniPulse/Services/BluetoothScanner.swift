@@ -39,8 +39,10 @@ final class BluetoothScanner: NSObject {
 
     @ObservationIgnored private var centralManager: CBCentralManager!
     @ObservationIgnored private var locationProvider: (() -> CLLocation?)?
+    @ObservationIgnored private var devicesByIdentifier: [String: NearbyDevice] = [:]
     @ObservationIgnored private var lastAdvertisementAt: [String: Date] = [:]
     @ObservationIgnored private var smoothedIntervals: [String: TimeInterval] = [:]
+    @ObservationIgnored private var pendingPublish: DispatchWorkItem?
     @ObservationIgnored var onStateChanged: (() -> Void)?
 
     override init() {
@@ -59,13 +61,16 @@ final class BluetoothScanner: NSObject {
         }
 
         devices.removeAll()
+        devicesByIdentifier.removeAll()
+        lastAdvertisementAt.removeAll()
+        smoothedIntervals.removeAll()
         centralManager.scanForPeripherals(
             withServices: nil,
             options: [CBCentralManagerScanOptionAllowDuplicatesKey: true]
         )
         isScanning = true
         status = .scanning
-        onStateChanged?()
+        publishDevices()
     }
 
     func stopScanning() {
@@ -74,7 +79,9 @@ final class BluetoothScanner: NSObject {
         if centralManager.state == .poweredOn {
             status = .ready
         }
-        onStateChanged?()
+        pendingPublish?.cancel()
+        pendingPublish = nil
+        publishDevices()
     }
 
     private func updateStatus(for state: CBManagerState) {
@@ -122,8 +129,8 @@ extension BluetoothScanner: CBCentralManagerDelegate {
         let identity = BLEAdvertisementInterpreter.identify(name: name, advertisementData: advertisementData)
         let interval = advertisementInterval(for: identifier, at: now)
 
-        if let index = devices.firstIndex(where: { $0.identifier == identifier }) {
-            devices[index] = devices[index].refreshed(
+        if let existing = devicesByIdentifier[identifier] {
+            devicesByIdentifier[identifier] = existing.refreshed(
                 name: name,
                 rssi: RSSI.intValue,
                 advertisedServices: services,
@@ -136,7 +143,7 @@ extension BluetoothScanner: CBCentralManagerDelegate {
                 at: now
             )
         } else {
-            devices.append(
+            devicesByIdentifier[identifier] =
                 NearbyDevice(
                     identifier: identifier,
                     name: name,
@@ -150,9 +157,8 @@ extension BluetoothScanner: CBCentralManagerDelegate {
                     advertisementInterval: interval,
                     detectionLocation: detectionLocation
                 )
-            )
         }
-        onStateChanged?()
+        schedulePublish()
     }
 
     private func advertisementInterval(for identifier: String, at date: Date) -> TimeInterval? {
@@ -163,5 +169,25 @@ extension BluetoothScanner: CBCentralManagerDelegate {
         let smoothed = smoothedIntervals[identifier].map { ($0 * 0.7) + (sample * 0.3) } ?? sample
         smoothedIntervals[identifier] = smoothed
         return smoothed
+    }
+
+    private func schedulePublish() {
+        guard pendingPublish == nil else { return }
+        let work = DispatchWorkItem { [weak self] in
+            self?.pendingPublish = nil
+            self?.publishDevices()
+        }
+        pendingPublish = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25, execute: work)
+    }
+
+    private func publishDevices(at date: Date = Date()) {
+        let staleBefore = date.addingTimeInterval(-60)
+        devicesByIdentifier = devicesByIdentifier.filter { $0.value.lastSeen >= staleBefore }
+        let activeIdentifiers = Set(devicesByIdentifier.keys)
+        lastAdvertisementAt = lastAdvertisementAt.filter { activeIdentifiers.contains($0.key) }
+        smoothedIntervals = smoothedIntervals.filter { activeIdentifiers.contains($0.key) }
+        devices = devicesByIdentifier.values.sorted { $0.lastSeen > $1.lastSeen }
+        onStateChanged?()
     }
 }

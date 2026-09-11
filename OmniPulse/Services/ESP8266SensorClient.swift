@@ -23,6 +23,11 @@ final class ESP8266SensorClient {
             status = "El sensor respondió con un error."
             throw URLError(.badServerResponse)
         }
+        guard httpResponse.expectedContentLength <= Int64(SensorPayloadDecoder.maximumPayloadBytes),
+              data.count <= SensorPayloadDecoder.maximumPayloadBytes else {
+            status = "La respuesta del sensor es demasiado grande."
+            throw SensorPayloadDecodingError.payloadTooLarge
+        }
 
         let payload = try SensorPayloadDecoder.decode(data)
         status = "Se recibieron \(payload.observations.count) redes de \(payload.sensorName ?? "ESP8266")."

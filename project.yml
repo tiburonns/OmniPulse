@@ -19,7 +19,6 @@ targets:
         excludes:
           - Resources/Info.plist
           - Resources/Firmware
-          - App/OmniPulseIntents.swift
       - path: OmniPulse/Resources/Firmware
         buildPhase: resources
       - path: Shared

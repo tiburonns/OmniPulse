@@ -238,7 +238,7 @@ private struct IPhoneFlashingGuideView: View {
                 Text("OmniPulse no puede flashear directamente un ESP32 por el USB-C del iPhone. iOS no ofrece a una app común acceso al puerto serie USB genérico que usa esptool.")
             }
             Section("Alternativa recomendada") {
-                Text("El primer flasheo se realiza desde Mac, PC o Linux. Los ESP32 que ejecuten firmware OmniPulse 1.3.0 o posterior pueden recibir las siguientes actualizaciones OTA por Bluetooth desde la app. ESP8266 y D1 mini todavía requieren USB.")
+                Text("El flasheo de las compilaciones distribuidas se realiza por USB desde Mac, PC o Linux. La OTA por Bluetooth permanece desactivada hasta incorporar firma de firmware, anti-rollback y recuperación segura.")
             }
         }
         .navigationTitle("Flasheo desde iPhone")

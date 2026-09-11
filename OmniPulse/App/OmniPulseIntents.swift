@@ -36,17 +36,23 @@ enum OmniPulseDestination: String, AppEnum {
     }
 }
 
-@available(iOS 26.0, *)
+@available(iOS 18.0, *)
 struct OpenOmniPulseDestinationIntent: AppIntent {
     static let title: LocalizedStringResource = "Abrir sección de OmniPulse"
     static let description = IntentDescription("Abre Escanear, Historial o Mapa en OmniPulse.")
-    static let supportedModes: IntentModes = [.foreground]
+    static let openAppWhenRun = true
 
     @Parameter(title: "Sección", default: .scan)
     var destination: OmniPulseDestination
 
     @Dependency
     private var appNavigation: AppNavigation
+
+    init() {}
+
+    init(destination: OmniPulseDestination) {
+        self.destination = destination
+    }
 
     static var parameterSummary: some ParameterSummary {
         Summary("Abrir \(\.$destination) en OmniPulse")
@@ -59,13 +65,13 @@ struct OpenOmniPulseDestinationIntent: AppIntent {
     }
 }
 
-@available(iOS 26.0, *)
+@available(iOS 18.0, *)
 struct OmniPulseShortcuts: AppShortcutsProvider {
     static var shortcutTileColor: ShortcutTileColor { .blue }
 
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
-            intent: open(OmniPulseDestination.scan),
+            intent: OpenOmniPulseDestinationIntent(destination: .scan),
             phrases: [
                 "Abrir escáner en \(.applicationName)",
                 "Escanear dispositivos con \(.applicationName)"
@@ -75,7 +81,7 @@ struct OmniPulseShortcuts: AppShortcutsProvider {
         )
 
         AppShortcut(
-            intent: open(OmniPulseDestination.history),
+            intent: OpenOmniPulseDestinationIntent(destination: .history),
             phrases: [
                 "Abrir historial de \(.applicationName)",
                 "Mostrar detecciones en \(.applicationName)"
@@ -85,7 +91,7 @@ struct OmniPulseShortcuts: AppShortcutsProvider {
         )
 
         AppShortcut(
-            intent: open(OmniPulseDestination.map),
+            intent: OpenOmniPulseDestinationIntent(destination: .map),
             phrases: [
                 "Abrir mapa de \(.applicationName)",
                 "Mostrar mapa en \(.applicationName)"
@@ -95,9 +101,4 @@ struct OmniPulseShortcuts: AppShortcutsProvider {
         )
     }
 
-    private static func open(_ destination: OmniPulseDestination) -> OpenOmniPulseDestinationIntent {
-        var intent = OpenOmniPulseDestinationIntent()
-        intent.destination = destination
-        return intent
-    }
 }

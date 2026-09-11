@@ -265,7 +265,9 @@ final class SensorBridge: NSObject {
     }
 
     func firmwarePackage(for sensor: ConnectedSensor) -> FirmwarePackage? {
-        FirmwareCatalog.package(for: sensor.hardware)
+        guard firmwareControlCharacteristics[sensor.id] != nil,
+              firmwareDataCharacteristics[sensor.id] != nil else { return nil }
+        return FirmwareCatalog.package(for: sensor.hardware)
     }
 
     func startFirmwareUpdate(for sensor: ConnectedSensor) {
