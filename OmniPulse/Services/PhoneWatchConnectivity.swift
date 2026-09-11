@@ -11,6 +11,7 @@ final class PhoneWatchConnectivity: NSObject {
     @ObservationIgnored private var session: WCSession?
     @ObservationIgnored private var snapshotProvider: (() -> WatchAppSnapshot)?
     @ObservationIgnored private var commandHandler: ((WatchCommand) -> Void)?
+    @ObservationIgnored private var pendingSnapshotTask: Task<Void, Never>?
 
     override init() {
         super.init()
@@ -30,15 +31,28 @@ final class PhoneWatchConnectivity: NSObject {
     ) {
         self.snapshotProvider = snapshotProvider
         self.commandHandler = commandHandler
-        sendCurrentSnapshot()
+        sendCurrentSnapshot(immediately: true)
     }
 
-    func sendCurrentSnapshot() {
+    func sendCurrentSnapshot(immediately: Bool = false) {
+        if immediately {
+            pendingSnapshotTask?.cancel()
+            pendingSnapshotTask = nil
+            sendSnapshotNow()
+            return
+        }
+        guard pendingSnapshotTask == nil else { return }
+        pendingSnapshotTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .milliseconds(750))
+            guard !Task.isCancelled, let self else { return }
+            self.pendingSnapshotTask = nil
+            self.sendSnapshotNow()
+        }
+    }
+
+    private func sendSnapshotNow() {
         guard let session, let payload = currentPayload() else { return }
         try? session.updateApplicationContext(payload)
-        if session.isReachable {
-            session.sendMessage(payload, replyHandler: nil)
-        }
     }
 
     private func currentPayload() -> [String: Any]? {
@@ -51,7 +65,7 @@ final class PhoneWatchConnectivity: NSObject {
         guard let rawCommand = message["command"] as? String,
               let command = WatchCommand(rawValue: rawCommand) else { return }
         commandHandler?(command)
-        sendCurrentSnapshot()
+        sendCurrentSnapshot(immediately: true)
     }
 }
 
@@ -64,7 +78,7 @@ extension PhoneWatchConnectivity: WCSessionDelegate {
         Task { @MainActor in
             self.activationState = error?.localizedDescription
                 ?? (activationState == .activated ? "Apple Watch enlazado" : "Apple Watch no enlazado")
-            self.sendCurrentSnapshot()
+            self.sendCurrentSnapshot(immediately: true)
         }
     }
 

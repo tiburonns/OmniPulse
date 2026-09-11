@@ -12,6 +12,7 @@ struct OmniPulseApp: App {
     @State private var appTheme = AppTheme()
     @State private var watchConnectivity = PhoneWatchConnectivity()
     @State private var appNavigation: AppNavigation
+    @State private var databaseRecoveryMessage: String?
     private let sharedModelContainer: ModelContainer
 
     init() {
@@ -19,10 +20,22 @@ struct OmniPulseApp: App {
         let bluetoothScanner = BluetoothScanner()
         let sensorBridge = SensorBridge()
         let modelContainer: ModelContainer
+        let recoveryMessage: String?
         do {
             modelContainer = try ModelContainer(for: DetectionRecord.self, SurveyProject.self)
+            recoveryMessage = nil
         } catch {
-            fatalError("No se pudo abrir la base de OmniPulse: \(error.localizedDescription)")
+            let configuration = ModelConfiguration(isStoredInMemoryOnly: true)
+            do {
+                modelContainer = try ModelContainer(
+                    for: DetectionRecord.self,
+                    SurveyProject.self,
+                    configurations: configuration
+                )
+                recoveryMessage = "No se pudo abrir la base local (\(error.localizedDescription)). OmniPulse está usando una sesión temporal; exporta el diagnóstico antes de reiniciar."
+            } catch {
+                preconditionFailure("No se pudo crear ni siquiera una base temporal de OmniPulse: \(error.localizedDescription)")
+            }
         }
         bluetoothScanner.useLocationProvider { [weak locationService] in
             locationService?.freshLocation()
@@ -35,6 +48,7 @@ struct OmniPulseApp: App {
         _locationService = State(initialValue: locationService)
         _sensorBridge = State(initialValue: sensorBridge)
         sharedModelContainer = modelContainer
+        _databaseRecoveryMessage = State(initialValue: recoveryMessage)
 
         let navigation = AppNavigation()
         _appNavigation = State(initialValue: navigation)
@@ -57,6 +71,7 @@ struct OmniPulseApp: App {
         _watchConnectivity = State(initialValue: watchConnectivity)
         if #available(iOS 18.0, *) {
             AppDependencyManager.shared.add(dependency: navigation)
+            OmniPulseShortcuts.updateAppShortcutParameters()
         }
     }
 
@@ -70,6 +85,17 @@ struct OmniPulseApp: App {
                 .environment(appTheme)
                 .environment(watchConnectivity)
                 .environment(appNavigation)
+                .alert(
+                    "Recuperación de base de datos",
+                    isPresented: Binding(
+                        get: { databaseRecoveryMessage != nil },
+                        set: { if !$0 { databaseRecoveryMessage = nil } }
+                    )
+                ) {
+                    Button("Entendido") { databaseRecoveryMessage = nil }
+                } message: {
+                    Text(databaseRecoveryMessage ?? "")
+                }
         }
         .modelContainer(sharedModelContainer)
     }

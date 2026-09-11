@@ -41,6 +41,13 @@ bool otaSHA256Initialized = false;
 #define OMNIPULSE_BOARD_PROFILE "ESP32"
 #endif
 
+// Lab OTA is off in every distributed build. Enabling it requires an explicit
+// local build flag and an authenticated, encrypted BLE link. Firmware signing
+// and anti-rollback are still required before enabling OTA in production.
+#ifndef OMNIPULSE_ENABLE_LAB_OTA
+#define OMNIPULSE_ENABLE_LAB_OTA 0
+#endif
+
 class SensorServerCallbacks : public NimBLEServerCallbacks {
     void onDisconnect(NimBLEServer* server, NimBLEConnInfo& connection, int reason) override {
         Serial.printf("iPhone disconnected (reason %d); restarting advertising\n", reason);
@@ -293,6 +300,9 @@ void captureNearbyRadioObservations() {
 
 void startBLEService() {
     NimBLEDevice::init(sensorName.c_str());
+#if OMNIPULSE_ENABLE_LAB_OTA
+    NimBLEDevice::setSecurityAuth(/* bonding */ true, /* mitm */ true, /* secure connections */ true);
+#endif
 
     sensorServer = NimBLEDevice::createServer();
     sensorServer->setCallbacks(&sensorServerCallbacks);
@@ -302,16 +312,22 @@ void startBLEService() {
         NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY
     );
     observationsCharacteristic->setValue("{\"version\":1,\"sensorID\":\"pending\",\"observations\":[]}");
+#if OMNIPULSE_ENABLE_LAB_OTA
     firmwareControlCharacteristic = service->createCharacteristic(
         kFirmwareControlCharacteristicUUID,
-        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::NOTIFY
+        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_ENC |
+            NIMBLE_PROPERTY::WRITE_AUTHEN | NIMBLE_PROPERTY::NOTIFY
     );
     firmwareDataCharacteristic = service->createCharacteristic(
         kFirmwareDataCharacteristicUUID,
-        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR
+        NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR |
+            NIMBLE_PROPERTY::WRITE_ENC | NIMBLE_PROPERTY::WRITE_AUTHEN
     );
     firmwareControlCharacteristic->setCallbacks(&firmwareControlCallbacks);
     firmwareDataCharacteristic->setCallbacks(&firmwareDataCallbacks);
+#else
+    Serial.println("BLE OTA disabled: build with explicit lab-only authorization to expose it");
+#endif
     sensorAdvertising = NimBLEDevice::getAdvertising();
     sensorAdvertising->addServiceUUID(kServiceUUID);
     sensorAdvertising->enableScanResponse(true);

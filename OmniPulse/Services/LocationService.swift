@@ -12,16 +12,36 @@ final class LocationService: NSObject {
 
     @ObservationIgnored private let manager = CLLocationManager()
     @ObservationIgnored private var vehicleTrackingOwners: Set<String> = []
+    @ObservationIgnored private var injectedLocation: CLLocation?
 
     override init() {
         super.init()
         manager.delegate = self
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         authorizationStatus = manager.authorizationStatus
+#if DEBUG
+        let arguments = ProcessInfo.processInfo.arguments
+        if let index = arguments.firstIndex(of: "--ui-test-location"), arguments.indices.contains(index + 1) {
+            let parts = arguments[index + 1].split(separator: ",").compactMap { Double($0) }
+            if parts.count == 2 {
+                injectedLocation = CLLocation(latitude: parts[0], longitude: parts[1])
+            }
+        }
+#endif
     }
 
     func requestCurrentLocation() {
         lastError = nil
+        if let injectedLocation {
+            latestLocation = injectedLocation
+#if os(macOS)
+            authorizationStatus = .authorizedAlways
+#else
+            authorizationStatus = .authorizedWhenInUse
+#endif
+            isUpdating = false
+            return
+        }
         guard CLLocationManager.locationServicesEnabled() else {
             lastError = "Los servicios de ubicación están desactivados en el sistema."
             isUpdating = false

@@ -6,15 +6,22 @@ on:
     branches: [main]
 
 jobs:
-  build:
-    runs-on: macos-latest
+  apple:
+    runs-on: macos-15
     steps:
-      - uses: actions/checkout@v5
-      - name: Install XcodeGen
-        run: brew install xcodegen
-      - name: Generate Xcode project
-        run: xcodegen generate --spec project.yml
-      - name: Build
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install pinned XcodeGen
+        run: |
+          curl --fail --location --silent --show-error \
+            https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip \
+            --output "$RUNNER_TEMP/xcodegen.zip"
+          unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen"
+          echo "$RUNNER_TEMP/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
+      - name: Generate and verify Xcode project
+        run: |
+          xcodegen generate --spec project.yml
+          git diff --exit-code -- OmniPulse.xcodeproj/project.pbxproj
+      - name: Build iOS
         run: >-
           xcodebuild
           -project OmniPulse.xcodeproj
@@ -22,15 +29,52 @@ jobs:
           -destination 'generic/platform=iOS Simulator'
           CODE_SIGNING_ALLOWED=NO
           build
+      - name: Run iOS unit and deterministic UI tests
+        run: >-
+          xcodebuild test
+          -project OmniPulse.xcodeproj
+          -scheme OmniPulse
+          -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest'
+          CODE_SIGNING_ALLOWED=NO
       - name: Build macOS
         run: >-
           xcodebuild
           -project OmniPulse.xcodeproj
           -scheme OmniPulseMac
-          -destination 'generic/platform=macOS'
+          -destination 'platform=macOS'
+          CODE_SIGNING_ALLOWED=NO
+          build
+      - name: Build watchOS
+        run: >-
+          xcodebuild
+          -project OmniPulse.xcodeproj
+          -scheme OmniPulseWatch
+          -destination 'generic/platform=watchOS Simulator'
           CODE_SIGNING_ALLOWED=NO
           build
       - name: Build and validate AltStore IPA
         run: ./script/build_altstore_ipa.sh
       - name: Validate AltStore source
         run: python3 -m json.tool source.json > /dev/null
+
+  firmware:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install PlatformIO
+        run: python3 -m pip install --disable-pip-version-check platformio==6.1.18
+      - name: Build ESP32 and enforce flash budget
+        working-directory: firmware/esp32-omnipulse
+        run: |
+          pio run -e esp32dev
+          test "$(stat -c%s .pio/build/esp32dev/firmware.bin)" -le 1114112
+      - name: Build ESP8266
+        working-directory: firmware/esp8266-omnipulse
+        run: |
+          pio run
+          test "$(stat -c%s .pio/build/nodemcuv2/firmware.bin)" -le 887795
+      - name: Build pinned ESP32-C5 profile
+        working-directory: firmware/esp32-omnipulse
+        run: |
+          pio run -e esp32-c5-devkitc-1
+          test "$(stat -c%s .pio/build/esp32-c5-devkitc-1/firmware.bin)" -le 1504051

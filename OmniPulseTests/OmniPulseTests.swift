@@ -113,6 +113,30 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertEqual(payload.hardware, "ESP32-S3")
     }
 
+    func testSensorPayloadRejectsDuplicateOrInvalidObservations() {
+        let json = """
+        {
+          "version": 1,
+          "sensorID": "sensor-1",
+          "observations": [
+            {"kind":"wifiNetwork","identifier":"wifi-1","rssi":-61,"channel":6},
+            {"kind":"wifiNetwork","identifier":"wifi-1","rssi":-55,"channel":6}
+          ]
+        }
+        """
+
+        XCTAssertThrowsError(try SensorPayloadDecoder.decode(Data(json.utf8))) { error in
+            XCTAssertEqual(error.localizedDescription, "El lote contiene una observación inválida o duplicada.")
+        }
+    }
+
+    func testSensorPayloadRejectsOversizedInputBeforeDecoding() {
+        let data = Data(repeating: 0x20, count: SensorPayloadDecoder.maximumPayloadBytes + 1)
+        XCTAssertThrowsError(try SensorPayloadDecoder.decode(data)) { error in
+            XCTAssertEqual(error.localizedDescription, "El lote del sensor supera los límites permitidos.")
+        }
+    }
+
     func testCustomThemePaletteCanBePersisted() throws {
         var palette = ThemePalette.defaultCustom
         palette.accent = "12ABEF"
