@@ -16,7 +16,7 @@ jobs:
             https://github.com/yonaskolb/XcodeGen/releases/download/2.46.0/xcodegen.zip \
             --output "$RUNNER_TEMP/xcodegen.zip"
           unzip -q "$RUNNER_TEMP/xcodegen.zip" -d "$RUNNER_TEMP/xcodegen"
-          echo "$RUNNER_TEMP/xcodegen/bin" >> "$GITHUB_PATH"
+          echo "$RUNNER_TEMP/xcodegen/xcodegen/bin" >> "$GITHUB_PATH"
       - name: Generate and verify Xcode project
         run: |
           xcodegen generate --spec project.yml
