@@ -14,7 +14,7 @@ struct FirmwarePackage: Identifiable, Hashable, Sendable {
 }
 
 enum FirmwareCatalog {
-    static let currentVersion = "1.3.0"
+    static let currentVersion = "1.4.0"
 
     static let packages: [FirmwarePackage] = [
         FirmwarePackage(

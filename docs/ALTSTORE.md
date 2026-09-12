@@ -2,7 +2,7 @@
 
 ## Descarga recomendada
 
-Descarga `OmniPulse-AltStore-v1.1.0.ipa` desde la [versión 1.1.0 de GitHub](https://github.com/tiburonns/OmniPulse/releases/tag/v1.1.0), o agrega esta fuente a AltStore:
+Descarga `OmniPulse-AltStore-v1.2.0.ipa` desde la [versión 1.2.0 de GitHub](https://github.com/tiburonns/OmniPulse/releases/tag/v1.2.0), o agrega esta fuente a AltStore:
 
 ```text
 https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json
@@ -19,14 +19,14 @@ Desde la versión 1.0.1, la IPA conserva toda la aplicación del iPhone y excluy
 ## Instalar desde AltStore
 
 1. Elimina de Descargas cualquier copia de `OmniPulse-Unsigned-v1.0.ipa` para no seleccionar el archivo anterior por accidente.
-2. Abre AltStore, agrega la fuente indicada arriba e instala OmniPulse 1.1.0. También puedes descargar la IPA y abrirla con AltStore.
+2. Abre AltStore, agrega la fuente indicada arriba e instala OmniPulse 1.2.0. También puedes descargar la IPA y abrirla con AltStore.
 3. Mantén AltServer disponible y el iPhone conectado a la misma red o por USB durante la firma e instalación.
 4. Con una cuenta gratuita, recuerda renovar la firma antes de que termine su periodo de siete días.
 
 ## Instalar desde Sideloadly
 
 1. Conecta el iPhone al Mac y confirma **Confiar en este ordenador**.
-2. Abre Sideloadly y selecciona `OmniPulse-AltStore-v1.1.0.ipa`.
+2. Abre Sideloadly y selecciona `OmniPulse-AltStore-v1.2.0.ipa`.
 3. Selecciona tu dispositivo y tu Apple ID, inicia la instalación y completa cualquier verificación solicitada por Apple.
 
 ## Generar la IPA compatible
@@ -44,7 +44,7 @@ Para obtener la app completa de iPhone y Apple Watch, no uses esa IPA: abre `Omn
 
 ## Si AltStore todavía se cierra
 
-- Confirma que el nombre del archivo sea `OmniPulse-AltStore-v1.1.0.ipa` y no la IPA 1.0.
+- Confirma que el nombre del archivo sea `OmniPulse-AltStore-v1.2.0.ipa` y no la IPA 1.0.
 - Reinicia AltStore después de borrar la descarga anterior.
 - Actualiza AltStore y AltServer a la versión más reciente disponible.
 - Verifica que exista espacio libre suficiente en el iPhone y el Mac.

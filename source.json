@@ -17,6 +17,22 @@
       "category": "utilities",
       "versions": [
         {
+          "version": "1.2.0",
+          "buildVersion": "4",
+          "date": "2026-09-12T03:58:24Z",
+          "localizedDescription": "Añade calibración RSSI independiente por sensor, diagnóstico de salud y memoria, límites configurables para el historial local y firmware ESP32 1.4.0 con validación segura de arranque y recuperación OTA.",
+          "downloadURL": "https://github.com/tiburonns/OmniPulse/releases/download/v1.2.0/OmniPulse-AltStore-v1.2.0.ipa",
+          "size": 5735574,
+          "minOSVersion": "17.0",
+          "entitlements": [],
+          "privacy": {
+            "NSBluetoothAlwaysUsageDescription": "OmniPulse utiliza Bluetooth para detectar dispositivos y sensores cercanos.",
+            "NSBluetoothPeripheralUsageDescription": "OmniPulse utiliza Bluetooth para comunicarse con sensores cercanos.",
+            "NSLocalNetworkUsageDescription": "OmniPulse se conecta directamente a sensores ESP8266 autorizados para recibir escaneos Wi-Fi.",
+            "NSLocationWhenInUseUsageDescription": "OmniPulse utiliza tu ubicación únicamente cuando decides asociarla a una detección o leer la red Wi-Fi conectada."
+          }
+        },
+        {
           "version": "1.1.0",
           "buildVersion": "3",
           "date": "2026-08-22T18:46:57Z",

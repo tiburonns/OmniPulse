@@ -48,6 +48,7 @@ struct OmniPulseApp: App {
         _locationService = State(initialValue: locationService)
         _sensorBridge = State(initialValue: sensorBridge)
         sharedModelContainer = modelContainer
+        _ = try? DetectionHistoryRetention.pruneUsingSavedPolicy(in: modelContainer.mainContext)
         _databaseRecoveryMessage = State(initialValue: recoveryMessage)
 
         let navigation = AppNavigation()

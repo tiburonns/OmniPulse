@@ -105,3 +105,38 @@ final class DetectionRecord {
         floorPlanX != nil && floorPlanY != nil
     }
 }
+
+@MainActor
+enum DetectionHistoryRetention {
+    static let defaultMaximumRecords = 10_000
+
+    @discardableResult
+    static func prune(in context: ModelContext, retentionDays: Int, maximumRecords: Int) throws -> Int {
+        var descriptor = FetchDescriptor<DetectionRecord>()
+        descriptor.includePendingChanges = true
+        let records = try context.fetch(descriptor).sorted { $0.seenAt > $1.seenAt }
+        let cutoff = retentionDays > 0
+            ? Calendar.current.date(byAdding: .day, value: -retentionDays, to: .now)
+            : nil
+        let boundedMaximum = max(500, maximumRecords)
+        var deletedIDs = Set<UUID>()
+        for (index, record) in records.enumerated() {
+            if index >= boundedMaximum || cutoff.map({ record.seenAt < $0 }) == true {
+                context.delete(record)
+                deletedIDs.insert(record.id)
+            }
+        }
+        if !deletedIDs.isEmpty { try context.save() }
+        return deletedIDs.count
+    }
+
+    @discardableResult
+    static func pruneUsingSavedPolicy(in context: ModelContext) throws -> Int {
+        let defaults = UserDefaults.standard
+        let retentionDays = defaults.object(forKey: "retentionDays") == nil ? 90 : defaults.integer(forKey: "retentionDays")
+        let maximumRecords = defaults.object(forKey: "maximumHistoryRecords") == nil
+            ? defaultMaximumRecords
+            : defaults.integer(forKey: "maximumHistoryRecords")
+        return try prune(in: context, retentionDays: retentionDays, maximumRecords: maximumRecords)
+    }
+}

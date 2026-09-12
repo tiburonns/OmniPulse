@@ -410,6 +410,7 @@ private struct ConnectedSensorDetailView: View {
 
     let sensorID: UUID
     @State private var proposedName = ""
+    @State private var rssiOffset = 0
 
     private var sensor: ConnectedSensor? {
         sensorBridge.connectedSensors.first { $0.id == sensorID }
@@ -418,9 +419,14 @@ private struct ConnectedSensorDetailView: View {
     var body: some View {
         Group {
             if let sensor {
+                let health = sensorBridge.health(for: sensor)
                 Form {
                     Section("Estado") {
                         LabeledContent("Conexión", value: "Conectado")
+                        LabeledContent("Salud", value: health.title)
+                        Text(health.detail)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         LabeledContent("Conectado desde", value: sensor.connectedAt.formatted(date: .omitted, time: .standard))
                         if let lastReceivedAt = sensor.lastReceivedAt {
                             LabeledContent("Última recepción", value: lastReceivedAt.formatted(date: .omitted, time: .standard))
@@ -439,6 +445,32 @@ private struct ConnectedSensorDetailView: View {
                         }
                         if let firmwareVersion = sensor.firmwareVersion {
                             LabeledContent("Firmware", value: firmwareVersion)
+                        }
+                        LabeledContent("Observaciones recibidas", value: sensor.receivedObservationCount.formatted())
+                        if let lastRSSI = sensor.lastRSSI {
+                            LabeledContent("Última señal", value: "\(lastRSSI) dBm")
+                        }
+                        if let uptimeSeconds = sensor.uptimeSeconds {
+                            LabeledContent("Tiempo encendido", value: uptimeDescription(uptimeSeconds))
+                        }
+                        if let freeHeapBytes = sensor.freeHeapBytes {
+                            LabeledContent("Memoria libre", value: ByteCountFormatter.string(fromByteCount: Int64(freeHeapBytes), countStyle: .memory))
+                        }
+                    }
+
+                    if let identifier = sensor.sensorIdentifier {
+                        Section("Calibración de señal") {
+                            Stepper("Corrección RSSI: \(signedOffset) dB", value: $rssiOffset, in: -20...20)
+                            Button("Guardar calibración") {
+                                sensorBridge.setRSSICalibration(offset: rssiOffset, for: identifier)
+                            }
+                            Button("Restablecer calibración") {
+                                rssiOffset = 0
+                                sensorBridge.setRSSICalibration(offset: 0, for: identifier)
+                            }
+                            Text("Compara el sensor con una referencia a distancia fija. La corrección se aplica a lotes nuevos y queda guardada solo en este dispositivo.")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
 
@@ -500,12 +532,25 @@ private struct ConnectedSensorDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             proposedName = sensor?.customName ?? ""
+            if let identifier = sensor?.sensorIdentifier {
+                rssiOffset = sensorBridge.calibration(for: identifier).rssiOffset
+            }
         }
     }
 
     private func isFirmwareUpdating(_ sensorID: UUID) -> Bool {
         guard let stage = sensorBridge.firmwareUpdates[sensorID]?.stage else { return false }
         return [.preparing, .transferring, .verifying].contains(stage)
+    }
+
+    private var signedOffset: String {
+        rssiOffset >= 0 ? "+\(rssiOffset)" : "\(rssiOffset)"
+    }
+
+    private func uptimeDescription(_ seconds: UInt64) -> String {
+        let hours = seconds / 3_600
+        let minutes = (seconds % 3_600) / 60
+        return hours > 0 ? "\(hours) h \(minutes) min" : "\(minutes) min"
     }
 }
 

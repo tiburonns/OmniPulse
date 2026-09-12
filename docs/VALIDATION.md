@@ -8,6 +8,7 @@
 - La compilación de watchOS para simulador terminó correctamente.
 - Las 10 pruebas de `OmniPulseTests` pasaron sin fallos en iPhone 17 con iOS 26.5.
 - El firmware ESP8266 1.1.0 compiló correctamente para `d1_mini` y `nodemcuv2`.
+- El firmware ESP32 1.4.0 compiló correctamente para ESP32, ESP32-CAM, ESP32-S3, XIAO ESP32S3 y ESP32-C5; los binarios resultantes están incluidos como recursos de la app.
 - Los binarios de firmware actualizados están incluidos en los recursos de la aplicación.
 - La búsqueda automatizada no encontró perfiles de aprovisionamiento, certificados, claves privadas, credenciales ni identificadores del equipo de desarrollo.
 - Los reportes de cierre del iPhone localizaron el fallo de AltStore 2.2.1 en `ldid::Allocate` al firmar la arquitectura Watch `arm64_32` incluida en la IPA 1.0.

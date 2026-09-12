@@ -96,6 +96,8 @@ final class OmniPulseTests: XCTestCase {
           "sensorName": "OmniPulse 0001",
           "firmwareVersion": "1.2.0",
           "hardware": "ESP32-S3",
+          "uptimeSeconds": 3600,
+          "freeHeapBytes": 145000,
           "observations": [{
             "kind": "wifiNetwork",
             "identifier": "wifi-1",
@@ -111,6 +113,14 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertEqual(payload.sensorName, "OmniPulse 0001")
         XCTAssertEqual(payload.firmwareVersion, "1.2.0")
         XCTAssertEqual(payload.hardware, "ESP32-S3")
+        XCTAssertEqual(payload.uptimeSeconds, 3600)
+        XCTAssertEqual(payload.freeHeapBytes, 145000)
+    }
+
+    func testSensorCalibrationDefaultsToNoCorrection() {
+        let calibration = SensorCalibration.standard(for: "sensor-1")
+        XCTAssertEqual(calibration.sensorID, "sensor-1")
+        XCTAssertEqual(calibration.rssiOffset, 0)
     }
 
     func testSensorPayloadRejectsDuplicateOrInvalidObservations() {

@@ -4,6 +4,7 @@
 #include <Update.h>
 #include <WiFi.h>
 #include <esp_system.h>
+#include <esp_ota_ops.h>
 #include <mbedtls/sha256.h>
 
 namespace {
@@ -12,7 +13,7 @@ constexpr char kServiceUUID[] = "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A101";
 constexpr char kObservationsCharacteristicUUID[] = "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A102";
 constexpr char kFirmwareControlCharacteristicUUID[] = "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A103";
 constexpr char kFirmwareDataCharacteristicUUID[] = "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A104";
-constexpr char kFirmwareVersion[] = "1.3.0";
+constexpr char kFirmwareVersion[] = "1.4.0";
 constexpr uint32_t kCaptureIntervalMs = 15000;
 constexpr uint32_t kBLEScanDurationMs = 3000;
 constexpr int kMaximumWiFiResults = 8;
@@ -36,6 +37,8 @@ size_t otaReceivedSize = 0;
 String otaExpectedSHA256;
 mbedtls_sha256_context otaSHA256;
 bool otaSHA256Initialized = false;
+bool pendingFirmwareValidation = false;
+uint32_t firmwareValidationStartedAt = 0;
 
 #ifndef OMNIPULSE_BOARD_PROFILE
 #define OMNIPULSE_BOARD_PROFILE "ESP32"
@@ -43,7 +46,7 @@ bool otaSHA256Initialized = false;
 
 // Lab OTA is off in every distributed build. Enabling it requires an explicit
 // local build flag and an authenticated, encrypted BLE link. Firmware signing
-// and anti-rollback are still required before enabling OTA in production.
+// and signed images are still required before enabling OTA in production.
 #ifndef OMNIPULSE_ENABLE_LAB_OTA
 #define OMNIPULSE_ENABLE_LAB_OTA 0
 #endif
@@ -61,6 +64,9 @@ void publishFirmwareStatus(const char* state, const String& message = "") {
     }
     JsonDocument document;
     document["state"] = state;
+    document["uptimeSeconds"] = millis() / 1000;
+    document["freeHeapBytes"] = ESP.getFreeHeap();
+    document["rollbackProtection"] = true;
     if (!message.isEmpty()) {
         document["message"] = message;
     }
@@ -223,6 +229,8 @@ void publishObservation(
     document["sensorName"] = sensorName;
     document["firmwareVersion"] = kFirmwareVersion;
     document["hardware"] = OMNIPULSE_BOARD_PROFILE;
+    document["uptimeSeconds"] = millis() / 1000;
+    document["freeHeapBytes"] = ESP.getFreeHeap();
     JsonArray observations = document["observations"].to<JsonArray>();
     JsonObject observation = observations.add<JsonObject>();
     observation["kind"] = kind;
@@ -339,6 +347,34 @@ void startBLEService() {
     nearbyBLEScanner->setWindow(99);
 }
 
+void beginFirmwareValidationIfNeeded() {
+    const esp_partition_t* runningPartition = esp_ota_get_running_partition();
+    esp_ota_img_states_t state;
+    if (esp_ota_get_state_partition(runningPartition, &state) == ESP_OK && state == ESP_OTA_IMG_PENDING_VERIFY) {
+        pendingFirmwareValidation = true;
+        firmwareValidationStartedAt = millis();
+        Serial.println("New OTA image pending health validation");
+    }
+}
+
+void validatePendingFirmware() {
+    if (!pendingFirmwareValidation) {
+        return;
+    }
+    const uint32_t elapsed = millis() - firmwareValidationStartedAt;
+    const bool servicesHealthy = sensorServer != nullptr && sensorAdvertising != nullptr && nearbyBLEScanner != nullptr;
+    const bool memoryHealthy = ESP.getFreeHeap() >= 30000;
+    if (elapsed >= 30000 && servicesHealthy && memoryHealthy) {
+        if (esp_ota_mark_app_valid_cancel_rollback() == ESP_OK) {
+            pendingFirmwareValidation = false;
+            Serial.println("OTA image validated; automatic rollback cancelled");
+        }
+    } else if (elapsed >= 120000) {
+        Serial.println("OTA image failed health validation; rolling back");
+        esp_ota_mark_app_invalid_rollback_and_reboot();
+    }
+}
+
 }  // namespace
 
 void setup() {
@@ -350,11 +386,13 @@ void setup() {
     sensorID = "omnipulse-" + String(static_cast<uint32_t>(ESP.getEfuseMac() & 0xFFFF), HEX);
     sensorName = "OmniPulse " + sensorID.substring(sensorID.length() - 4);
     startBLEService();
+    beginFirmwareValidationIfNeeded();
 
     Serial.printf("%s ready: %s (firmware %s)\n", sensorName.c_str(), sensorID.c_str(), kFirmwareVersion);
 }
 
 void loop() {
+    validatePendingFirmware();
     if (restartAt > 0 && static_cast<int32_t>(millis() - restartAt) >= 0) {
         ESP.restart();
     }

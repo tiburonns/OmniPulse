@@ -34,6 +34,7 @@ struct SensorPayloadImporter {
             modelContext.insert(record)
         }
         try modelContext.save()
+        _ = try DetectionHistoryRetention.pruneUsingSavedPolicy(in: modelContext)
         return batch.observationCount
     }
 
