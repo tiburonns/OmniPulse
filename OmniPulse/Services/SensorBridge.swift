@@ -68,6 +68,10 @@ struct ConnectedSensor: Identifiable, Equatable {
     var hardware: String? = nil
     let connectedAt: Date
     var lastReceivedAt: Date? = nil
+    var receivedObservationCount = 0
+    var lastRSSI: Int? = nil
+    var uptimeSeconds: UInt64? = nil
+    var freeHeapBytes: Int? = nil
 
     var displayName: String {
         customName?.isEmpty == false ? customName! : advertisedName
@@ -124,6 +128,7 @@ final class SensorBridge: NSObject {
     @ObservationIgnored private var discoveryTimer: Timer?
     @ObservationIgnored private var shouldConnectWhenReady = false
     @ObservationIgnored private var sensorAliases: [String: String]
+    @ObservationIgnored private var sensorCalibrations: [String: SensorCalibration]
     @ObservationIgnored private var locationProvider: (() -> CLLocation?)?
     @ObservationIgnored var onStateChanged: (() -> Void)?
 
@@ -132,6 +137,12 @@ final class SensorBridge: NSObject {
 
     override init() {
         sensorAliases = UserDefaults.standard.dictionary(forKey: "sensorAliases") as? [String: String] ?? [:]
+        if let data = UserDefaults.standard.data(forKey: "sensorCalibrations"),
+           let stored = try? JSONDecoder().decode([String: SensorCalibration].self, from: data) {
+            sensorCalibrations = stored
+        } else {
+            sensorCalibrations = [:]
+        }
         super.init()
         centralManager = CBCentralManager(delegate: self, queue: .main)
     }
@@ -264,6 +275,39 @@ final class SensorBridge: NSObject {
         refreshConnectedState()
     }
 
+    func calibration(for sensorID: String) -> SensorCalibration {
+        sensorCalibrations[sensorID] ?? .standard(for: sensorID)
+    }
+
+    func setRSSICalibration(offset: Int, for sensorID: String) {
+        sensorCalibrations[sensorID] = SensorCalibration(
+            sensorID: sensorID,
+            rssiOffset: min(20, max(-20, offset)),
+            updatedAt: .now
+        )
+        if let data = try? JSONEncoder().encode(sensorCalibrations) {
+            UserDefaults.standard.set(data, forKey: "sensorCalibrations")
+        }
+    }
+
+    func health(for sensor: ConnectedSensor, now: Date = .now) -> SensorHealth {
+        guard let lastReceivedAt = sensor.lastReceivedAt else {
+            return SensorHealth(level: .waiting, title: "Esperando datos", detail: "El enlace está conectado, pero aún no llegó una observación.")
+        }
+        let age = now.timeIntervalSince(lastReceivedAt)
+        if age > 45 {
+            return SensorHealth(level: .stale, title: "Datos atrasados", detail: "No se reciben observaciones desde hace (Int(age.rounded())) segundos.")
+        }
+        if let freeHeapBytes = sensor.freeHeapBytes, freeHeapBytes < 30_000 {
+            return SensorHealth(level: .attention, title: "Memoria baja", detail: "El sensor reporta (ByteCountFormatter.string(fromByteCount: Int64(freeHeapBytes), countStyle: .memory)) libres.")
+        }
+        if let package = FirmwareCatalog.package(for: sensor.hardware),
+           FirmwareCatalog.isUpdateAvailable(installedVersion: sensor.firmwareVersion, package: package) {
+            return SensorHealth(level: .attention, title: "Firmware disponible", detail: "La versión (package.version) está disponible para este hardware.")
+        }
+        return SensorHealth(level: .healthy, title: "Saludable", detail: "Recepción reciente y recursos del sensor dentro del rango esperado.")
+    }
+
     func firmwarePackage(for sensor: ConnectedSensor) -> FirmwarePackage? {
         guard firmwareControlCharacteristics[sensor.id] != nil,
               firmwareDataCharacteristics[sensor.id] != nil else { return nil }
@@ -278,7 +322,7 @@ final class SensorBridge: NSObject {
               let transfer = firmwareDataCharacteristics[identifier] else {
             firmwareUpdates[identifier] = SensorFirmwareUpdate(
                 stage: .failed,
-                message: "Este sensor aún no admite OTA. Flashea la versión 1.3.0 una vez por USB."
+                message: "Este sensor aún no admite OTA. Flashea la versión 1.4.0 una vez por USB."
             )
             return
         }
@@ -365,6 +409,10 @@ final class SensorBridge: NSObject {
         connectedSensors[index].firmwareVersion = payload.firmwareVersion
         connectedSensors[index].hardware = payload.hardware
         connectedSensors[index].lastReceivedAt = .now
+        connectedSensors[index].receivedObservationCount += payload.observations.count
+        connectedSensors[index].lastRSSI = payload.observations.first?.rssi
+        connectedSensors[index].uptimeSeconds = payload.uptimeSeconds
+        connectedSensors[index].freeHeapBytes = payload.freeHeapBytes
         refreshConnectedState()
     }
 
@@ -391,6 +439,30 @@ final class SensorBridge: NSObject {
 
     private func append(_ payload: SensorPayload) {
         guard !payload.observations.isEmpty else { return }
+        let calibration = calibration(for: payload.sensorID)
+        let payload = SensorPayload(
+            version: payload.version,
+            sensorID: payload.sensorID,
+            sensorName: payload.sensorName,
+            firmwareVersion: payload.firmwareVersion,
+            hardware: payload.hardware,
+            capturedAt: payload.capturedAt,
+            uptimeSeconds: payload.uptimeSeconds,
+            freeHeapBytes: payload.freeHeapBytes,
+            observations: payload.observations.map { observation in
+                SensorObservation(
+                    kind: observation.kind,
+                    identifier: observation.identifier,
+                    name: observation.name,
+                    rssi: min(20, max(-127, observation.rssi + calibration.rssiOffset)),
+                    channel: observation.channel,
+                    manufacturerID: observation.manufacturerID,
+                    services: observation.services,
+                    beaconType: observation.beaconType,
+                    seenAt: observation.seenAt
+                )
+            }
+        )
         let incoming = payload.observations[0]
         let detectionLocation = locationProvider?().map(DetectionLocation.init)
         if payload.observations.count == 1,

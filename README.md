@@ -2,7 +2,7 @@
 
 Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubrimientos Bluetooth Low Energy (BLE), analiza redes Wi-Fi mediante sensores autorizados y conserva la ubicación de cada observación.
 
-[Descargar OmniPulse 1.1.0](https://github.com/tiburonns/OmniPulse/releases/tag/v1.1.0) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
+[Descargar OmniPulse 1.2.0](https://github.com/tiburonns/OmniPulse/releases/tag/v1.2.0) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
 
 ## Funciones principales
 

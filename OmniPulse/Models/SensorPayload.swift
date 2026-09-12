@@ -26,7 +26,32 @@ struct SensorPayload: Codable, Sendable {
     let firmwareVersion: String?
     let hardware: String?
     let capturedAt: Date?
+    let uptimeSeconds: UInt64?
+    let freeHeapBytes: Int?
     let observations: [SensorObservation]
+}
+
+struct SensorCalibration: Codable, Hashable, Sendable {
+    let sensorID: String
+    var rssiOffset: Int
+    var updatedAt: Date
+
+    static func standard(for sensorID: String) -> SensorCalibration {
+        SensorCalibration(sensorID: sensorID, rssiOffset: 0, updatedAt: .now)
+    }
+}
+
+enum SensorHealthLevel: String, Sendable {
+    case healthy
+    case attention
+    case stale
+    case waiting
+}
+
+struct SensorHealth: Sendable {
+    var level: SensorHealthLevel
+    var title: String
+    var detail: String
 }
 
 enum SensorPayloadDecodingError: LocalizedError {
@@ -69,6 +94,7 @@ enum SensorPayloadDecoder {
             throw SensorPayloadDecodingError.missingSensorID
         }
         guard payload.observations.count <= maximumObservations,
+              payload.freeHeapBytes.map({ $0 >= 0 }) ?? true,
               [payload.sensorName, payload.firmwareVersion, payload.hardware]
                 .compactMap({ $0 }).allSatisfy({ $0.count <= 128 }) else {
             throw SensorPayloadDecodingError.payloadTooLarge

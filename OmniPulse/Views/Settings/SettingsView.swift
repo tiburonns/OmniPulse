@@ -34,6 +34,7 @@ struct SettingsView: View {
     @Query private var records: [DetectionRecord]
 
     @AppStorage("retentionDays") private var retentionDays = 90
+    @AppStorage("maximumHistoryRecords") private var maximumHistoryRecords = DetectionHistoryRetention.defaultMaximumRecords
     @State private var deletionRequest: DeletionRequest?
 
     private var applicationLanguageName: String {
@@ -73,6 +74,17 @@ struct SettingsView: View {
                     Text("90 días").tag(90)
                     Text("1 año").tag(365)
                 }
+
+                Picker("Máximo de registros", selection: $maximumHistoryRecords) {
+                    Text("2,500").tag(2_500)
+                    Text("5,000").tag(5_000)
+                    Text("10,000").tag(10_000)
+                    Text("25,000").tag(25_000)
+                }
+
+                Text("La limpieza se ejecuta al iniciar, al importar lotes y al cambiar esta política.")
+                    .font(.footnote)
+                    .foregroundStyle(.secondary)
 
                 if retentionDays == 0 {
                     Text("OmniPulse no eliminará registros por antigüedad.")
@@ -141,6 +153,9 @@ struct SettingsView: View {
         } message: {
             Text("Esta acción no se puede deshacer.")
         }
+        .task { pruneHistory() }
+        .onChange(of: retentionDays) { _, _ in pruneHistory() }
+        .onChange(of: maximumHistoryRecords) { _, _ in pruneHistory() }
     }
 
     private func delete(request: DeletionRequest) {
@@ -157,6 +172,14 @@ struct SettingsView: View {
         }
         try? modelContext.save()
         deletionRequest = nil
+    }
+
+    private func pruneHistory() {
+        _ = try? DetectionHistoryRetention.prune(
+            in: modelContext,
+            retentionDays: retentionDays,
+            maximumRecords: maximumHistoryRecords
+        )
     }
 }
 

@@ -1,6 +1,6 @@
 # Sensor OmniPulse para ESP32
 
-Firmware 1.3 para ESP32, ESP32-S3, ESP32-C5 y Seeed Studio XIAO ESP32S3/Sense. Anuncia un servicio BLE y envía notificaciones JSON v1 con una observación por mensaje. Hace escaneos activos de redes Wi-Fi visibles y anuncios BLE; no captura tráfico, no intenta asociarse a redes y no transmite BSSID/MAC en claro.
+Firmware 1.4 para ESP32, ESP32-S3, ESP32-C5 y Seeed Studio XIAO ESP32S3/Sense. Anuncia un servicio BLE y envía notificaciones JSON v1 con una observación por mensaje, tiempo encendido y memoria libre para diagnóstico. Hace escaneos activos de redes Wi-Fi visibles y anuncios BLE; no captura tráfico, no intenta asociarse a redes y no transmite BSSID/MAC en claro.
 
 ## Requisitos
 
@@ -35,7 +35,7 @@ Los perfiles ESP32-C3 incluidos ya pasan la compilación. ESP32-C5 utiliza la pl
 
 ## Actualización OTA
 
-La primera instalación de la versión 1.3.0 se realiza por USB. A partir de ella, OmniPulse descubre dos características BLE adicionales, verifica el binario con SHA-256 y puede instalar futuras versiones desde la pantalla de detalle del sensor. Mantén una alimentación estable durante la transferencia.
+La primera instalación de la versión 1.4.0 se realiza por USB. A partir de ella, OmniPulse descubre dos características BLE adicionales, verifica el binario con SHA-256 y puede instalar futuras versiones desde la pantalla de detalle del sensor. Una imagen nueva queda pendiente durante 30 segundos: solo se confirma si BLE, el escáner y la memoria están saludables; de lo contrario el bootloader vuelve automáticamente a la imagen anterior. Mantén una alimentación estable durante la transferencia.
 
 ## Seguridad antes de uso real
 
