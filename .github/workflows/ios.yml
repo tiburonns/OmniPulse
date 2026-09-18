@@ -63,11 +63,16 @@ jobs:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
       - name: Install PlatformIO
         run: python3 -m pip install --disable-pip-version-check platformio==6.1.18
-      - name: Build ESP32 and enforce flash budget
+      - name: Build distributed ESP32 profiles
         working-directory: firmware/esp32-omnipulse
         run: |
           pio run -e esp32dev
           test "$(stat -c%s .pio/build/esp32dev/firmware.bin)" -le 1114112
+
+          for env in esp32cam esp32-s3-devkitc-1 seeed_xiao_esp32s3; do
+            pio run -e "$env"
+            test -s ".pio/build/$env/firmware.bin"
+          done
       - name: Build ESP8266
         working-directory: firmware/esp8266-omnipulse
         run: |
