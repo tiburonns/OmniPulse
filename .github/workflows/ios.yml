@@ -54,8 +54,13 @@ jobs:
           build
       - name: Build and validate AltStore IPA
         run: ./script/build_altstore_ipa.sh
-      - name: Validate AltStore source
-        run: python3 -m json.tool source.json > /dev/null
+      - name: Validate generated AltStore metadata against IPA
+        run: |
+          IPA_PATH="$(find dist -maxdepth 1 -type f -name 'OmniPulse-AltStore-v*.ipa' -print -quit)"
+          test -n "$IPA_PATH"
+          cp source.json "$RUNNER_TEMP/source.json"
+          python3 script/update_altstore_source.py "$IPA_PATH" "$RUNNER_TEMP/source.json"
+          python3 script/validate_altstore.py "$IPA_PATH" "$RUNNER_TEMP/source.json"
 
   firmware:
     runs-on: ubuntu-latest
