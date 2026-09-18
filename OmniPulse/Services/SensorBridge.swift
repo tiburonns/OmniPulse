@@ -296,14 +296,14 @@ final class SensorBridge: NSObject {
         }
         let age = now.timeIntervalSince(lastReceivedAt)
         if age > 45 {
-            return SensorHealth(level: .stale, title: "Datos atrasados", detail: "No se reciben observaciones desde hace (Int(age.rounded())) segundos.")
+            return SensorHealth(level: .stale, title: "Datos atrasados", detail: "No se reciben observaciones desde hace \(Int(age.rounded())) segundos.")
         }
         if let freeHeapBytes = sensor.freeHeapBytes, freeHeapBytes < 30_000 {
-            return SensorHealth(level: .attention, title: "Memoria baja", detail: "El sensor reporta (ByteCountFormatter.string(fromByteCount: Int64(freeHeapBytes), countStyle: .memory)) libres.")
+            return SensorHealth(level: .attention, title: "Memoria baja", detail: "El sensor reporta \(ByteCountFormatter.string(fromByteCount: Int64(freeHeapBytes), countStyle: .memory)) libres.")
         }
         if let package = FirmwareCatalog.package(for: sensor.hardware),
            FirmwareCatalog.isUpdateAvailable(installedVersion: sensor.firmwareVersion, package: package) {
-            return SensorHealth(level: .attention, title: "Firmware disponible", detail: "La versión (package.version) está disponible para este hardware.")
+            return SensorHealth(level: .attention, title: "Firmware disponible", detail: "La versión \(package.version) está disponible para este hardware.")
         }
         return SensorHealth(level: .healthy, title: "Saludable", detail: "Recepción reciente y recursos del sensor dentro del rango esperado.")
     }
