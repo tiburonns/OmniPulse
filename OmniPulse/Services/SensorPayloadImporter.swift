@@ -22,6 +22,8 @@ struct SensorPayloadImporter {
                 source: source.rawValue,
                 rssi: observation.rssi,
                 wifiChannel: observation.channel,
+                wifiFrequencyMHz: observation.frequencyMHz,
+                wifiChannelWidthMHz: observation.channelWidthMHz,
                 seenAt: observation.seenAt ?? batch.receivedAt,
                 location: location,
                 projectID: projectID,
