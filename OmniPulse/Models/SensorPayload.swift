@@ -11,6 +11,8 @@ struct SensorObservation: Codable, Hashable, Identifiable, Sendable {
     let name: String?
     let rssi: Int
     let channel: Int?
+    let frequencyMHz: Int?
+    let channelWidthMHz: Int?
     let manufacturerID: Int?
     let services: [String]?
     let beaconType: String?
@@ -18,6 +20,32 @@ struct SensorObservation: Codable, Hashable, Identifiable, Sendable {
 
     var id: String {
         "\(kind.rawValue):\(identifier)"
+    }
+
+    init(
+        kind: SensorObservationKind,
+        identifier: String,
+        name: String?,
+        rssi: Int,
+        channel: Int?,
+        frequencyMHz: Int? = nil,
+        channelWidthMHz: Int? = nil,
+        manufacturerID: Int?,
+        services: [String]?,
+        beaconType: String?,
+        seenAt: Date?
+    ) {
+        self.kind = kind
+        self.identifier = identifier
+        self.name = name
+        self.rssi = rssi
+        self.channel = channel
+        self.frequencyMHz = frequencyMHz
+        self.channelWidthMHz = channelWidthMHz
+        self.manufacturerID = manufacturerID
+        self.services = services
+        self.beaconType = beaconType
+        self.seenAt = seenAt
     }
 }
 
@@ -124,6 +152,12 @@ enum SensorPayloadDecoder {
                   observation.channel.map({
                       (1...233).contains($0)
                   }) ?? true,
+                  observation.frequencyMHz.map({
+                      (2_400...7_125).contains($0)
+                  }) ?? true,
+                  observation.channelWidthMHz.map({
+                      [20, 40, 80, 160, 320].contains($0)
+                  }) ?? true,
                   observation.manufacturerID.map({
                       (0...0xFFFF).contains($0)
                   }) ?? true,
@@ -144,6 +178,8 @@ enum SensorPayloadDecoder {
                     name: observation.name,
                     rssi: observation.rssi,
                     channel: observation.channel,
+                    frequencyMHz: observation.frequencyMHz,
+                    channelWidthMHz: observation.channelWidthMHz,
                     manufacturerID:
                         observation.manufacturerID,
                     services: observation.services,
