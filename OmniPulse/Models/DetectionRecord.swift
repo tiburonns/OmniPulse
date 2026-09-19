@@ -11,6 +11,8 @@ final class DetectionRecord {
     var source: String
     var rssi: Int
     var wifiChannel: Int?
+    var wifiFrequencyMHz: Int?
+    var wifiChannelWidthMHz: Int?
     var seenAt: Date
     var latitude: Double?
     var longitude: Double?
@@ -34,6 +36,8 @@ final class DetectionRecord {
         source: String,
         rssi: Int,
         wifiChannel: Int? = nil,
+        wifiFrequencyMHz: Int? = nil,
+        wifiChannelWidthMHz: Int? = nil,
         seenAt: Date = .now,
         location: CLLocation? = nil,
         projectID: UUID? = nil,
@@ -52,6 +56,8 @@ final class DetectionRecord {
         self.source = source
         self.rssi = rssi
         self.wifiChannel = wifiChannel
+        self.wifiFrequencyMHz = wifiFrequencyMHz
+        self.wifiChannelWidthMHz = wifiChannelWidthMHz
         self.seenAt = seenAt
         self.latitude = location?.coordinate.latitude
         self.longitude = location?.coordinate.longitude
@@ -98,7 +104,10 @@ final class DetectionRecord {
 
     var wifiBand: String? {
         guard transport == "Wi-Fi", let wifiChannel else { return nil }
-        return wifiChannel <= 14 ? "2.4 GHz" : "5 GHz"
+        return WiFiBand.infer(
+            channel: wifiChannel,
+            frequencyMHz: wifiFrequencyMHz
+        ).rawValue
     }
 
     var hasFloorPlanPosition: Bool {
