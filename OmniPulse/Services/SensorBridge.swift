@@ -492,6 +492,8 @@ final class SensorBridge: NSObject {
                     name: observation.name,
                     rssi: min(20, max(-127, observation.rssi + calibration.rssiOffset)),
                     channel: observation.channel,
+                    frequencyMHz: observation.frequencyMHz,
+                    channelWidthMHz: observation.channelWidthMHz,
                     manufacturerID: observation.manufacturerID,
                     services: observation.services,
                     beaconType: observation.beaconType,
