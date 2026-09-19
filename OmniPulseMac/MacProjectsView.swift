@@ -113,16 +113,59 @@ private struct MacProjectDashboard: View {
                 }
 
                 GroupBox("Recomendaciones") {
-                    HStack(spacing: 28) {
+                    LazyVGrid(
+                        columns: [
+                            GridItem(.adaptive(minimum: 190), spacing: 12)
+                        ],
+                        alignment: .leading,
+                        spacing: 12
+                    ) {
                         ForEach(WiFiBand.allCases) { band in
-                            if let recommendation = WiFiChannelAnalyzer.recommendation(for: band, samples: samples) {
-                                Label("\(band.rawValue): canal \(recommendation.channel)", systemImage: "checkmark.seal.fill")
+                            if let recommendation = WiFiChannelAnalyzer.recommendation(
+                                for: band,
+                                samples: samples
+                            ) {
+                                VStack(alignment: .leading, spacing: 5) {
+                                    Label(
+                                        "\(band.rawValue): canal \(recommendation.channel)",
+                                        systemImage: "checkmark.seal.fill"
+                                    )
+                                    .font(.headline)
                                     .foregroundStyle(appTheme.success)
+
+                                    Text(
+                                        "\(recommendation.channelWidthMHz) MHz · "
+                                        + "\(recommendation.observedNetworkCount) redes observadas"
+                                    )
+                                    .font(.caption)
+                                    .foregroundStyle(appTheme.secondaryText)
+
+                                    if recommendation.isPotentialDFS {
+                                        Text("DFS potencial")
+                                            .font(.caption.bold())
+                                            .foregroundStyle(.orange)
+                                    }
+
+                                    Text(recommendation.explanation)
+                                        .font(.caption)
+                                        .foregroundStyle(appTheme.secondaryText)
+                                }
+                                .padding(10)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    appTheme.cardBackground.opacity(0.55),
+                                    in: RoundedRectangle(cornerRadius: 12)
+                                )
                             } else {
-                                Text("\(band.rawValue): sin muestras").foregroundStyle(appTheme.secondaryText)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(band.rawValue).font(.headline)
+                                    Text("Sin muestras con banda identificable")
+                                        .font(.caption)
+                                        .foregroundStyle(appTheme.secondaryText)
+                                }
+                                .padding(10)
                             }
                         }
-                        Spacer()
                     }
                     .padding(8)
                 }
