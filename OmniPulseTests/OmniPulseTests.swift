@@ -123,6 +123,83 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertEqual(calibration.rssiOffset, 0)
     }
 
+    func testSensorObservationIdentityIncludesTransportKind() {
+        let wifi = SensorObservation(
+            kind: .wifiNetwork,
+            identifier: "shared-id",
+            name: nil,
+            rssi: -50,
+            channel: 6,
+            manufacturerID: nil,
+            services: nil,
+            beaconType: nil,
+            seenAt: nil
+        )
+        let bluetooth = SensorObservation(
+            kind: .bluetoothLE,
+            identifier: "shared-id",
+            name: nil,
+            rssi: -50,
+            channel: nil,
+            manufacturerID: nil,
+            services: nil,
+            beaconType: nil,
+            seenAt: nil
+        )
+
+        XCTAssertNotEqual(wifi.id, bluetooth.id)
+    }
+
+    func testSensorPayloadNormalizesStableIdentifiers() throws {
+        let json = """
+        {
+          "version": 1,
+          "sensorID": "  sensor-1  ",
+          "observations": [
+            {
+              "kind": "wifiNetwork",
+              "identifier": "  wifi-1  ",
+              "rssi": -61,
+              "channel": 6
+            }
+          ]
+        }
+        """
+
+        let payload = try SensorPayloadDecoder.decode(
+            Data(json.utf8)
+        )
+
+        XCTAssertEqual(payload.sensorID, "sensor-1")
+        XCTAssertEqual(
+            payload.observations.first?.identifier,
+            "wifi-1"
+        )
+    }
+
+    func testSensorPayloadRejectsInvalidManufacturerIdentifier() {
+        let json = """
+        {
+          "version": 1,
+          "sensorID": "sensor-1",
+          "observations": [
+            {
+              "kind": "bluetoothLE",
+              "identifier": "ble-1",
+              "rssi": -61,
+              "manufacturerID": 70000
+            }
+          ]
+        }
+        """
+
+        XCTAssertThrowsError(
+            try SensorPayloadDecoder.decode(
+                Data(json.utf8)
+            )
+        )
+    }
+
     func testSensorPayloadRejectsDuplicateOrInvalidObservations() {
         let json = """
         {
