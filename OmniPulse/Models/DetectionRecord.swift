@@ -115,8 +115,13 @@ enum DetectionHistoryRetention {
         var descriptor = FetchDescriptor<DetectionRecord>()
         descriptor.includePendingChanges = true
         let records = try context.fetch(descriptor).sorted { $0.seenAt > $1.seenAt }
-        let cutoff = retentionDays > 0
-            ? Calendar.current.date(byAdding: .day, value: -retentionDays, to: .now)
+        let boundedRetentionDays = max(0, retentionDays)
+        let cutoff = boundedRetentionDays > 0
+            ? Calendar.current.date(
+                byAdding: .day,
+                value: -boundedRetentionDays,
+                to: .now
+            )
             : nil
         let boundedMaximum = max(500, maximumRecords)
         var deletedIDs = Set<UUID>()
