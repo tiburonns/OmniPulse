@@ -92,6 +92,10 @@ private struct MacProjectDashboard: View {
     @State private var isImportingPlan = false
     @State private var report: SurveyReportDocument?
     @State private var isExporting = false
+    @AppStorage("wifiRecommendationWidthMHz")
+    private var recommendationWidthMHz = 20
+    @AppStorage("wifiIncludePotentialDFS")
+    private var includePotentialDFS = false
 
     private var samples: [WiFiChannelSample] { WiFiChannelAnalyzer.samples(from: records) }
     private var stats: [WiFiChannelStat] { WiFiChannelAnalyzer.statistics(samples: samples) }
@@ -113,6 +117,36 @@ private struct MacProjectDashboard: View {
                 }
 
                 GroupBox("Recomendaciones") {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 16) {
+                            Picker(
+                                "Ancho objetivo",
+                                selection: $recommendationWidthMHz
+                            ) {
+                                ForEach([20, 40, 80, 160, 320], id: \.self) {
+                                    Text("\($0) MHz").tag($0)
+                                }
+                            }
+                            .pickerStyle(.menu)
+                            .frame(maxWidth: 180)
+
+                            Toggle(
+                                "Considerar DFS en 5 GHz",
+                                isOn: $includePotentialDFS
+                            )
+                            .toggleStyle(.switch)
+
+                            Spacer()
+                        }
+
+                        Text(
+                            "La app compara presión espectral observada. "
+                            + "La disponibilidad real de canales depende del país, "
+                            + "del punto de acceso y del hardware."
+                        )
+                        .font(.caption)
+                        .foregroundStyle(appTheme.secondaryText)
+
                     LazyVGrid(
                         columns: [
                             GridItem(.adaptive(minimum: 190), spacing: 12)
@@ -123,7 +157,9 @@ private struct MacProjectDashboard: View {
                         ForEach(WiFiBand.allCases) { band in
                             if let recommendation = WiFiChannelAnalyzer.recommendation(
                                 for: band,
-                                samples: samples
+                                samples: samples,
+                                channelWidthMHz: recommendationWidthMHz,
+                                includePotentialDFS: includePotentialDFS
                             ) {
                                 VStack(alignment: .leading, spacing: 5) {
                                     Label(
@@ -168,6 +204,7 @@ private struct MacProjectDashboard: View {
                         }
                     }
                     .padding(8)
+                    }
                 }
 
                 GroupBox("Ocupación de canales") {
