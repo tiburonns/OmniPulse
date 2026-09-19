@@ -2,7 +2,7 @@
 
 Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubrimientos Bluetooth Low Energy (BLE), analiza redes Wi-Fi mediante sensores autorizados y conserva la ubicación de cada observación.
 
-> **Versión actual de desarrollo en `main`: 1.2.1 (build 5).** La última versión distribuida sigue siendo 1.2.0 hasta publicar una nueva release.
+> **Versión actual de desarrollo en `main`: 1.2.2 (build 6).** La última versión distribuida sigue siendo 1.2.0 hasta publicar una nueva release.
 
 [Descargar OmniPulse 1.2.0](https://github.com/tiburonns/OmniPulse/releases/tag/v1.2.0) · [Fuente para AltStore](https://raw.githubusercontent.com/tiburonns/OmniPulse/main/source.json) · [Instalar con AltStore/Sideloadly](docs/ALTSTORE.md) · [Compilar e instalar con Xcode](docs/COMPILAR_EN_XCODE.md)
 
@@ -11,12 +11,12 @@ Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubri
 - Escaneo BLE desde el iPhone con CoreBluetooth.
 - Ubicación bajo permiso `When In Use` con CoreLocation.
 - Historial local con SwiftData, mapa geográfico y planos de planta.
-- Proyectos de levantamiento, análisis y recomendación de canales de 2.4/5 GHz.
+- Proyectos de levantamiento con análisis espectral por frecuencia/ancho y recomendaciones conservadoras para 2.4/5/6 GHz; 6 GHz requiere una fuente capaz de reportar esa banda.
 - Informes PDF y exportación CSV iniciados por la persona usuaria.
 - Identificación BLE de fabricantes, categorías, iBeacon y Eddystone.
 - Conexión simultánea con hasta ocho sensores ESP32. La OTA BLE experimental está desactivada en las compilaciones distribuidas hasta incorporar firma y anti-rollback.
 - Soporte Wi-Fi local para NodeMCU ESP8266, Wemos/LOLIN D1 mini y placas similares.
-- Firmware incluido para ESP32, ESP32-CAM, ESP32-S3, XIAO ESP32S3/Sense, ESP32-C5, ESP8266 y D1 mini.
+- Firmware incluido para ESP32, ESP32-CAM, ESP32-S3, XIAO ESP32S3/Sense, ESP32-C5, ESP8266 y D1 mini. Los perfiles actuales no afirman escaneo 6 GHz; el ESP32-C5 aporta datos de 5 GHz cuando el entorno/hardware los expone.
 - Apariencia automática, seis temas oscuros, ocho temas claros y editor de paleta personalizada.
 - Atajos de Siri (iOS 18+) para abrir Escanear, Historial o Mapa.
 
