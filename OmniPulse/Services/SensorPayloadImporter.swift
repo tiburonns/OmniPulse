@@ -34,7 +34,12 @@ struct SensorPayloadImporter {
             modelContext.insert(record)
         }
         try modelContext.save()
-        _ = try DetectionHistoryRetention.pruneUsingSavedPolicy(in: modelContext)
+
+        // Retention is maintenance after a committed import. A cleanup failure
+        // must not make callers retry and duplicate an already-saved batch.
+        _ = try? DetectionHistoryRetention.pruneUsingSavedPolicy(
+            in: modelContext
+        )
         return batch.observationCount
     }
 
