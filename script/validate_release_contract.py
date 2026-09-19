@@ -52,4 +52,32 @@ if semver(published) > semver(version):
 if "DEVELOPMENT_TEAM" in project:
     raise SystemExit("build contract failed: project.yml must not hardcode an Apple team")
 
-print(f"PASS: OmniPulse main {version} (build {build}); published AltStore {published}")
+analyzer = (ROOT / "OmniPulse/Services/WiFiChannelAnalyzer.swift").read_text(encoding="utf-8")
+payload = (ROOT / "OmniPulse/Models/SensorPayload.swift").read_text(encoding="utf-8")
+detection = (ROOT / "OmniPulse/Models/DetectionRecord.swift").read_text(encoding="utf-8")
+protocol_doc = (ROOT / "docs/ESP32_PROTOCOL.md").read_text(encoding="utf-8")
+
+required_analyzer_tokens = [
+    'case six = "6 GHz"',
+    "includePotentialDFS",
+    "sixGHzPSCCandidates",
+    "channelWidthMHz",
+    "frequencyMHz",
+]
+for token in required_analyzer_tokens:
+    if token not in analyzer:
+        raise SystemExit(f"Wi-Fi analysis contract failed: missing {token}")
+
+for token in ["frequencyMHz", "channelWidthMHz"]:
+    if token not in payload:
+        raise SystemExit(f"sensor payload contract failed: missing {token}")
+
+for token in ["wifiFrequencyMHz", "wifiChannelWidthMHz"]:
+    if token not in detection:
+        raise SystemExit(f"history contract failed: missing {token}")
+
+for token in ["frequencyMHz", "channelWidthMHz", "6 GHz", "DFS"]:
+    if token not in protocol_doc:
+        raise SystemExit(f"protocol documentation contract failed: missing {token}")
+
+print(f"PASS: OmniPulse main {version} (build {build}); published AltStore {published}; advanced Wi-Fi contract present")
