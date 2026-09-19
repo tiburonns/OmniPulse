@@ -112,6 +112,14 @@ final class SensorBridge: NSObject {
     static let firmwareControlCharacteristicUUID = CBUUID(string: "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A103")
     static let firmwareDataCharacteristicUUID = CBUUID(string: "7D3B6D4E-1A7F-4A43-87D2-7E4D4D50A104")
 
+    static let labFirmwareOTAEnabled: Bool = {
+#if OMNIPULSE_ENABLE_LAB_OTA
+        true
+#else
+        false
+#endif
+    }()
+
     private(set) var state: SensorConnectionState = .unavailable("Inicializando Bluetooth.")
     private(set) var receivedBatches: [ReceivedSensorBatch] = []
     private(set) var connectedSensors: [ConnectedSensor] = []
@@ -309,13 +317,28 @@ final class SensorBridge: NSObject {
     }
 
     func firmwarePackage(for sensor: ConnectedSensor) -> FirmwarePackage? {
-        guard firmwareControlCharacteristics[sensor.id] != nil,
-              firmwareDataCharacteristics[sensor.id] != nil else { return nil }
-        return FirmwareCatalog.package(for: sensor.hardware)
+        guard Self.labFirmwareOTAEnabled,
+              firmwareControlCharacteristics[sensor.id] != nil,
+              firmwareDataCharacteristics[sensor.id] != nil
+        else {
+            return nil
+        }
+        return FirmwareCatalog.package(
+            for: sensor.hardware
+        )
     }
 
     func startFirmwareUpdate(for sensor: ConnectedSensor) {
         let identifier = sensor.id
+        guard Self.labFirmwareOTAEnabled else {
+            firmwareUpdates[identifier] =
+                SensorFirmwareUpdate(
+                    stage: .failed,
+                    message:
+                        "La OTA BLE está desactivada en esta compilación. Usa USB hasta que la ruta firmada y anti-rollback esté disponible."
+                )
+            return
+        }
         guard firmwareSessions[identifier] == nil else { return }
         guard let peripheral = connectedPeripherals[identifier],
               let control = firmwareControlCharacteristics[identifier],
@@ -410,7 +433,20 @@ final class SensorBridge: NSObject {
         connectedSensors[index].hardware = payload.hardware
         connectedSensors[index].lastReceivedAt = .now
         connectedSensors[index].receivedObservationCount += payload.observations.count
-        connectedSensors[index].lastRSSI = payload.observations.first?.rssi
+
+        if let rawRSSI = payload.observations.first?.rssi {
+            let offset = calibration(
+                for: sensorIdentifier
+            ).rssiOffset
+            connectedSensors[index].lastRSSI =
+                min(
+                    20,
+                    max(-127, rawRSSI + offset)
+                )
+        } else {
+            connectedSensors[index].lastRSSI = nil
+        }
+
         connectedSensors[index].uptimeSeconds = payload.uptimeSeconds
         connectedSensors[index].freeHeapBytes = payload.freeHeapBytes
         refreshConnectedState()
@@ -566,8 +602,20 @@ extension SensorBridge: CBPeripheralDelegate {
             fail("El sensor no ofrece el servicio OmniPulse esperado.", peripheral: peripheral)
             return
         }
+        var characteristics = [
+            Self.observationsCharacteristicUUID
+        ]
+        if Self.labFirmwareOTAEnabled {
+            characteristics.append(
+                Self.firmwareControlCharacteristicUUID
+            )
+            characteristics.append(
+                Self.firmwareDataCharacteristicUUID
+            )
+        }
+
         peripheral.discoverCharacteristics(
-            [Self.observationsCharacteristicUUID, Self.firmwareControlCharacteristicUUID, Self.firmwareDataCharacteristicUUID],
+            characteristics,
             for: service
         )
     }
@@ -583,14 +631,52 @@ extension SensorBridge: CBPeripheralDelegate {
             return
         }
 
-        observationsCharacteristics[peripheral.identifier] = characteristic
-        peripheral.setNotifyValue(true, for: characteristic)
-        if let control = service.characteristics?.first(where: { $0.uuid == Self.firmwareControlCharacteristicUUID }) {
-            firmwareControlCharacteristics[peripheral.identifier] = control
-            peripheral.setNotifyValue(true, for: control)
+        observationsCharacteristics[
+            peripheral.identifier
+        ] = characteristic
+        peripheral.setNotifyValue(
+            true,
+            for: characteristic
+        )
+
+        guard Self.labFirmwareOTAEnabled else {
+            firmwareControlCharacteristics.removeValue(
+                forKey: peripheral.identifier
+            )
+            firmwareDataCharacteristics.removeValue(
+                forKey: peripheral.identifier
+            )
+            return
         }
-        if let transfer = service.characteristics?.first(where: { $0.uuid == Self.firmwareDataCharacteristicUUID }) {
-            firmwareDataCharacteristics[peripheral.identifier] = transfer
+
+        if let control =
+            service.characteristics?.first(
+                where: {
+                    $0.uuid
+                        == Self
+                            .firmwareControlCharacteristicUUID
+                }
+            ) {
+            firmwareControlCharacteristics[
+                peripheral.identifier
+            ] = control
+            peripheral.setNotifyValue(
+                true,
+                for: control
+            )
+        }
+
+        if let transfer =
+            service.characteristics?.first(
+                where: {
+                    $0.uuid
+                        == Self
+                            .firmwareDataCharacteristicUUID
+                }
+            ) {
+            firmwareDataCharacteristics[
+                peripheral.identifier
+            ] = transfer
         }
     }
 
