@@ -103,13 +103,17 @@ final class OmniPulseTests: XCTestCase {
             "identifier": "wifi-1",
             "name": "Laboratorio",
             "rssi": -61,
-            "channel": 6
+            "channel": 6,
+            "frequencyMHz": 2437,
+            "channelWidthMHz": 20
           }]
         }
         """
 
         let payload = try SensorPayloadDecoder.decode(Data(json.utf8))
         XCTAssertEqual(payload.observations.first?.channel, 6)
+        XCTAssertEqual(payload.observations.first?.frequencyMHz, 2437)
+        XCTAssertEqual(payload.observations.first?.channelWidthMHz, 20)
         XCTAssertEqual(payload.sensorName, "OmniPulse 0001")
         XCTAssertEqual(payload.firmwareVersion, "1.2.0")
         XCTAssertEqual(payload.hardware, "ESP32-S3")
@@ -174,6 +178,29 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertEqual(
             payload.observations.first?.identifier,
             "wifi-1"
+        )
+    }
+
+    func testSensorPayloadRejectsInvalidWiFiSpectralMetadata() {
+        let json = """
+        {
+          "version": 1,
+          "sensorID": "sensor-1",
+          "observations": [
+            {
+              "kind": "wifiNetwork",
+              "identifier": "wifi-1",
+              "rssi": -61,
+              "channel": 6,
+              "frequencyMHz": 9000,
+              "channelWidthMHz": 10
+            }
+          ]
+        }
+        """
+
+        XCTAssertThrowsError(
+            try SensorPayloadDecoder.decode(Data(json.utf8))
         )
     }
 
@@ -272,6 +299,148 @@ final class OmniPulseTests: XCTestCase {
         let recommendation = WiFiChannelAnalyzer.recommendation(for: .twoPointFour, samples: samples)
 
         XCTAssertEqual(recommendation?.channel, 11)
+    }
+
+    func testChannelBandInferenceUsesMeasuredFrequencyBeforeChannelNumber() {
+        XCTAssertEqual(
+            WiFiBand.infer(channel: 5, frequencyMHz: 5975),
+            .six
+        )
+        XCTAssertEqual(
+            WiFiBand.infer(channel: 5, frequencyMHz: nil),
+            .twoPointFour
+        )
+        XCTAssertEqual(
+            WiFiBand.infer(channel: 149, frequencyMHz: 5745),
+            .five
+        )
+    }
+
+    func testChannelStatisticsKeepOverlappingBandNumbersSeparate() {
+        let samples = [
+            WiFiChannelSample(
+                identifier: "legacy-24",
+                name: "2.4",
+                channel: 5,
+                rssi: -52,
+                frequencyMHz: 2432
+            ),
+            WiFiChannelSample(
+                identifier: "wifi-6e",
+                name: "6 GHz",
+                channel: 5,
+                rssi: -57,
+                frequencyMHz: 5975
+            )
+        ]
+
+        let stats = WiFiChannelAnalyzer.statistics(samples: samples)
+        XCTAssertEqual(stats.count, 2)
+        XCTAssertTrue(stats.contains {
+            $0.band == .twoPointFour && $0.channel == 5
+        })
+        XCTAssertTrue(stats.contains {
+            $0.band == .six && $0.channel == 5
+        })
+    }
+
+    func testFiveGHzRecommendationsAvoidPotentialDFSByDefault() throws {
+        let samples = [
+            WiFiChannelSample(
+                identifier: "ap-36",
+                name: "Busy low",
+                channel: 36,
+                rssi: -35,
+                frequencyMHz: 5180,
+                channelWidthMHz: 80
+            ),
+            WiFiChannelSample(
+                identifier: "ap-149",
+                name: "Busy high",
+                channel: 149,
+                rssi: -38,
+                frequencyMHz: 5745,
+                channelWidthMHz: 80
+            )
+        ]
+
+        let recommendation = try XCTUnwrap(
+            WiFiChannelAnalyzer.recommendation(
+                for: .five,
+                samples: samples,
+                channelWidthMHz: 20
+            )
+        )
+
+        XCTAssertFalse(recommendation.isPotentialDFS)
+        XCTAssertFalse(
+            [52, 56, 60, 64, 100, 104, 108, 112, 116, 120,
+             124, 128, 132, 136, 140, 144]
+                .contains(recommendation.channel)
+        )
+    }
+
+    func testSixGHzRecommendationUsesPreferredScanningChannel() throws {
+        let samples = [
+            WiFiChannelSample(
+                identifier: "six-1",
+                name: "6E",
+                channel: 5,
+                rssi: -44,
+                frequencyMHz: 5975,
+                channelWidthMHz: 80
+            )
+        ]
+
+        let recommendation = try XCTUnwrap(
+            WiFiChannelAnalyzer.recommendation(
+                for: .six,
+                samples: samples,
+                channelWidthMHz: 80
+            )
+        )
+
+        XCTAssertEqual(recommendation.band, .six)
+        XCTAssertTrue(
+            [5, 21, 37, 53, 69, 85, 101, 117, 133, 149,
+             165, 181, 197, 213, 229]
+                .contains(recommendation.channel)
+        )
+        XCTAssertEqual(recommendation.channelWidthMHz, 80)
+    }
+
+    func testChannelWidthChangesSpectralOverlapPressure() throws {
+        let samples = [
+            WiFiChannelSample(
+                identifier: "wide-ap",
+                name: "Wide AP",
+                channel: 36,
+                rssi: -35,
+                frequencyMHz: 5180,
+                channelWidthMHz: 80
+            )
+        ]
+
+        let narrow = try XCTUnwrap(
+            WiFiChannelAnalyzer.recommendation(
+                for: .five,
+                samples: samples,
+                channelWidthMHz: 20
+            )
+        )
+        let wide = try XCTUnwrap(
+            WiFiChannelAnalyzer.recommendation(
+                for: .five,
+                samples: samples,
+                channelWidthMHz: 160
+            )
+        )
+
+        XCTAssertNotEqual(
+            narrow.score,
+            wide.score,
+            "Requested width should change overlap pressure."
+        )
     }
 
     func testChannelAnalyzerKeepsOnlyTheStrongestRepeatedObservation() {
