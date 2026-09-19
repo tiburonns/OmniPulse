@@ -414,33 +414,29 @@ final class OmniPulseTests: XCTestCase {
             WiFiChannelSample(
                 identifier: "wide-ap",
                 name: "Wide AP",
-                channel: 36,
+                channel: 6,
                 rssi: -35,
-                frequencyMHz: 5180,
-                channelWidthMHz: 80
+                frequencyMHz: 2437,
+                channelWidthMHz: 40
             )
         ]
 
         let narrow = try XCTUnwrap(
             WiFiChannelAnalyzer.recommendation(
-                for: .five,
+                for: .twoPointFour,
                 samples: samples,
                 channelWidthMHz: 20
             )
         )
         let wide = try XCTUnwrap(
             WiFiChannelAnalyzer.recommendation(
-                for: .five,
+                for: .twoPointFour,
                 samples: samples,
-                channelWidthMHz: 160
+                channelWidthMHz: 40
             )
         )
 
-        XCTAssertNotEqual(
-            narrow.score,
-            wide.score,
-            "Requested width should change overlap pressure."
-        )
+        XCTAssertGreaterThan(wide.score, narrow.score)
     }
 
     func testChannelAnalyzerKeepsOnlyTheStrongestRepeatedObservation() {
