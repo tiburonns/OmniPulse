@@ -439,6 +439,34 @@ final class OmniPulseTests: XCTestCase {
         XCTAssertGreaterThan(wide.score, narrow.score)
     }
 
+    func testFiveGHzCanRecommendDFSWhenTheUserExplicitlyAllowsIt() throws {
+        let samples = [
+            WiFiChannelSample(identifier: "low", name: "Busy 36", channel: 36, rssi: -30, frequencyMHz: 5180, channelWidthMHz: 160),
+            WiFiChannelSample(identifier: "high", name: "Busy 149", channel: 149, rssi: -30, frequencyMHz: 5745, channelWidthMHz: 160)
+        ]
+
+        let recommendation = try XCTUnwrap(
+            WiFiChannelAnalyzer.recommendation(
+                for: .five,
+                samples: samples,
+                channelWidthMHz: 20,
+                includePotentialDFS: true
+            )
+        )
+
+        XCTAssertTrue(recommendation.isPotentialDFS)
+        XCTAssertTrue(WiFiChannelAnalyzer.isPotentialDFS(recommendation.channel))
+    }
+
+    func testChannelCenterFrequenciesCover24FiveAndSixGHz() {
+        XCTAssertEqual(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 1, band: .twoPointFour), 2412)
+        XCTAssertEqual(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 14, band: .twoPointFour), 2484)
+        XCTAssertEqual(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 36, band: .five), 5180)
+        XCTAssertEqual(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 5, band: .six), 5975)
+        XCTAssertNil(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 0, band: .twoPointFour))
+        XCTAssertNil(WiFiChannelAnalyzer.centerFrequencyMHz(channel: 234, band: .six))
+    }
+
     func testChannelAnalyzerKeepsOnlyTheStrongestRepeatedObservation() {
         let records = [
             DetectionRecord(deviceIdentifier: "ap-1", deviceName: "Oficina", transport: "Wi-Fi", source: "ESP32", rssi: -72, wifiChannel: 6),
