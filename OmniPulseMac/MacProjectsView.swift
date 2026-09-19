@@ -153,7 +153,7 @@ private struct MacProjectDashboard: View {
                                 .padding(10)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .background(
-                                    appTheme.cardBackground.opacity(0.55),
+                                    appTheme.surface.opacity(0.55),
                                     in: RoundedRectangle(cornerRadius: 12)
                                 )
                             } else {
