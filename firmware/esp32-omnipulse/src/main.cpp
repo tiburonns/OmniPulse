@@ -217,6 +217,11 @@ int wifiFrequencyMHz(int channel) {
     if (channel >= 1 && channel <= 13) {
         return 2407 + (channel * 5);
     }
+    // ESP32-C5 can report 5 GHz channels. Preserve a center-frequency hint
+    // so the app does not have to infer the band from channel numbering alone.
+    if (channel >= 32 && channel <= 196) {
+        return 5000 + (channel * 5);
+    }
     return -1;
 }
 
