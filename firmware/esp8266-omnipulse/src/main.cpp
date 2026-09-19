@@ -42,6 +42,16 @@ void sendStatus() {
     server.send(200, "application/json", payload);
 }
 
+int wifiFrequencyMHz(int channel) {
+    if (channel == 14) {
+        return 2484;
+    }
+    if (channel >= 1 && channel <= 13) {
+        return 2407 + (channel * 5);
+    }
+    return -1;
+}
+
 void sendScan() {
     const int networkCount = WiFi.scanNetworks(false, true);
     if (networkCount < 0) {
