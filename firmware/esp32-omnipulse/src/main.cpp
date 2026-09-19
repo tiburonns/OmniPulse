@@ -210,6 +210,16 @@ String pseudonym(const String& input, const char* prefix) {
     return String(prefix) + suffix;
 }
 
+int wifiFrequencyMHz(int channel) {
+    if (channel == 14) {
+        return 2484;
+    }
+    if (channel >= 1 && channel <= 13) {
+        return 2407 + (channel * 5);
+    }
+    return -1;
+}
+
 void publishObservation(
     const char* kind,
     const String& identifier,
@@ -241,6 +251,10 @@ void publishObservation(
     }
     if (channel > 0) {
         observation["channel"] = channel;
+        const int frequencyMHz = wifiFrequencyMHz(channel);
+        if (frequencyMHz > 0) {
+            observation["frequencyMHz"] = frequencyMHz;
+        }
     }
 
     String payload;
