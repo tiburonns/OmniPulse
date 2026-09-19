@@ -65,7 +65,12 @@ void sendScan() {
         observation["identifier"] = pseudonym(fingerprint);
         observation["name"] = ssid.isEmpty() ? "Red oculta" : ssid;
         observation["rssi"] = WiFi.RSSI(index);
-        observation["channel"] = WiFi.channel(index);
+        const int channel = WiFi.channel(index);
+        observation["channel"] = channel;
+        const int frequencyMHz = wifiFrequencyMHz(channel);
+        if (frequencyMHz > 0) {
+            observation["frequencyMHz"] = frequencyMHz;
+        }
     }
 
     String payload;
