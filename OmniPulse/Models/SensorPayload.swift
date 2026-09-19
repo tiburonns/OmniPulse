@@ -16,7 +16,9 @@ struct SensorObservation: Codable, Hashable, Identifiable, Sendable {
     let beaconType: String?
     let seenAt: Date?
 
-    var id: String { identifier }
+    var id: String {
+        "\(kind.rawValue):\(identifier)"
+    }
 }
 
 struct SensorPayload: Codable, Sendable {
@@ -101,21 +103,66 @@ enum SensorPayloadDecoder {
         }
 
         var identifiers = Set<String>()
+        var normalizedObservations: [SensorObservation] = []
+        normalizedObservations.reserveCapacity(
+            payload.observations.count
+        )
+
         for observation in payload.observations {
-            let identifier = observation.identifier.trimmingCharacters(in: .whitespacesAndNewlines)
-            let identity = "\(observation.kind.rawValue):\(identifier)"
+            let identifier =
+                observation.identifier
+                    .trimmingCharacters(
+                        in: .whitespacesAndNewlines
+                    )
+            let identity =
+                "\(observation.kind.rawValue):\(identifier)"
+
             guard !identifier.isEmpty,
                   identifier.count <= 256,
                   (observation.name?.count ?? 0) <= 256,
                   (-127...20).contains(observation.rssi),
-                  observation.channel.map({ (1...233).contains($0) }) ?? true,
+                  observation.channel.map({
+                      (1...233).contains($0)
+                  }) ?? true,
+                  observation.manufacturerID.map({
+                      (0...0xFFFF).contains($0)
+                  }) ?? true,
+                  (observation.beaconType?.count ?? 0) <= 64,
                   (observation.services?.count ?? 0) <= 32,
-                  observation.services?.allSatisfy({ $0.count <= 128 }) ?? true,
-                  identifiers.insert(identity).inserted else {
+                  observation.services?.allSatisfy({
+                      !$0.isEmpty && $0.count <= 128
+                  }) ?? true,
+                  identifiers.insert(identity).inserted
+            else {
                 throw SensorPayloadDecodingError.invalidObservation
             }
+
+            normalizedObservations.append(
+                SensorObservation(
+                    kind: observation.kind,
+                    identifier: identifier,
+                    name: observation.name,
+                    rssi: observation.rssi,
+                    channel: observation.channel,
+                    manufacturerID:
+                        observation.manufacturerID,
+                    services: observation.services,
+                    beaconType: observation.beaconType,
+                    seenAt: observation.seenAt
+                )
+            )
         }
 
-        return payload
+        return SensorPayload(
+            version: payload.version,
+            sensorID: sensorID,
+            sensorName: payload.sensorName,
+            firmwareVersion: payload.firmwareVersion,
+            hardware: payload.hardware,
+            capturedAt: payload.capturedAt,
+            uptimeSeconds: payload.uptimeSeconds,
+            freeHeapBytes: payload.freeHeapBytes,
+            observations: normalizedObservations
+        )
     }
 }
