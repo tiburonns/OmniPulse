@@ -17,6 +17,7 @@
 
 ## Fase 3 — Utilidad diaria
 
+- [x] Análisis espectral con frecuencia/ancho de canal, separación 2.4/5/6 GHz y recomendaciones conservadoras ante DFS.
 - [x] Filtros por fuente y búsqueda de texto.
 - [x] Exportación CSV bajo acción explícita.
 - [x] Retención configurable y borrado de registros caducados.
