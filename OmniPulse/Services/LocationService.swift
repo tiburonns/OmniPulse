@@ -20,11 +20,42 @@ final class LocationService: NSObject {
         manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
         authorizationStatus = manager.authorizationStatus
 #if DEBUG
-        let arguments = ProcessInfo.processInfo.arguments
-        if let index = arguments.firstIndex(of: "--ui-test-location"), arguments.indices.contains(index + 1) {
-            let parts = arguments[index + 1].split(separator: ",").compactMap { Double($0) }
-            if parts.count == 2 {
-                injectedLocation = CLLocation(latitude: parts[0], longitude: parts[1])
+        let processInfo = ProcessInfo.processInfo
+        let environmentLocation =
+            processInfo.environment["OMNIPULSE_UI_TEST_LOCATION"]
+        let arguments = processInfo.arguments
+        let argumentLocation: String? = {
+            guard let index = arguments.firstIndex(
+                of: "--ui-test-location"
+            ),
+            arguments.indices.contains(index + 1) else {
+                return nil
+            }
+            return arguments[index + 1]
+        }()
+
+        if let rawLocation =
+            environmentLocation ?? argumentLocation {
+            let parts = rawLocation
+                .split(
+                    separator: ",",
+                    maxSplits: 1,
+                    omittingEmptySubsequences: false
+                )
+                .compactMap {
+                    Double(
+                        $0.trimmingCharacters(
+                            in: .whitespacesAndNewlines
+                        )
+                    )
+                }
+            if parts.count == 2,
+               (-90...90).contains(parts[0]),
+               (-180...180).contains(parts[1]) {
+                injectedLocation = CLLocation(
+                    latitude: parts[0],
+                    longitude: parts[1]
+                )
             }
         }
 #endif
