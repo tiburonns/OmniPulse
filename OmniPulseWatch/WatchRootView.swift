@@ -169,6 +169,8 @@ struct WatchRootView: View {
             return watchLocalized("Red oculta")
         case .bluetoothDevice:
             return watchLocalized("Dispositivo BLE")
+        case .unnamedDevice:
+            return watchLocalized("Dispositivo sin nombre")
         case .none:
             return detection.name
         }
@@ -220,6 +222,8 @@ private struct WatchDetectionDetail: View {
             return watchLocalized("Red oculta")
         case .bluetoothDevice:
             return watchLocalized("Dispositivo BLE")
+        case .unnamedDevice:
+            return watchLocalized("Dispositivo sin nombre")
         case .none:
             return detection.name
         }
