@@ -114,7 +114,7 @@ struct OmniPulseApp: App {
                 seenAt: device.lastSeen,
                 latitude: device.detectionLocation?.latitude,
                 longitude: device.detectionLocation?.longitude,
-                fallbackName: device.name.isEmpty ? .bluetoothDevice : nil
+                fallbackName: device.name.isEmpty ? .unnamedDevice : nil
             )
         }
         let sensor = sensorBridge.receivedBatches.flatMap { batch in
