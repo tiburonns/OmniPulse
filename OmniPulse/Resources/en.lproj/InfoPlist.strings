@@ -1,0 +1,5 @@
+"NSBluetoothAlwaysUsageDescription" = "OmniPulse uses Bluetooth to detect nearby devices and sensors.";
+"NSBluetoothPeripheralUsageDescription" = "OmniPulse uses Bluetooth to communicate with nearby sensors.";
+"NSLocalNetworkUsageDescription" = "OmniPulse connects directly to authorized local sensors to receive Wi-Fi scan results.";
+"NSLocationWhenInUseUsageDescription" = "OmniPulse uses your location only when you choose to associate it with detections or location-based scan results.";
+"NSLocationUsageDescription" = "OmniPulse uses your location only when you choose to associate it with detections or location-based scan results.";

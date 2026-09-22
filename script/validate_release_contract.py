@@ -18,6 +18,46 @@ if not builds or len(set(builds)) != 1:
 version = versions[0]
 build = builds[0]
 
+# The committed Info.plists are generated artifacts, but they are also used by
+# people who clone the repository before running XcodeGen. Keep them aligned
+# with project.yml so a checkout never advertises a stale build.
+import plistlib
+for relative in [
+    "OmniPulse/Resources/Info.plist",
+    "OmniPulseMac/Info.plist",
+    "OmniPulseWatch/Info.plist",
+]:
+    with (ROOT / relative).open("rb") as handle:
+        info = plistlib.load(handle)
+    if str(info.get("CFBundleShortVersionString")) != version:
+        raise SystemExit(
+            f"version contract failed: {relative} has "
+            f"{info.get('CFBundleShortVersionString')} instead of {version}"
+        )
+    if str(info.get("CFBundleVersion")) != build:
+        raise SystemExit(
+            f"version contract failed: {relative} has build "
+            f"{info.get('CFBundleVersion')} instead of {build}"
+        )
+
+required_permission_keys = [
+    "NSBluetoothAlwaysUsageDescription",
+    "NSBluetoothPeripheralUsageDescription",
+    "NSLocalNetworkUsageDescription",
+    "NSLocationWhenInUseUsageDescription",
+    "NSLocationUsageDescription",
+]
+for locale in ("en", "es"):
+    path = ROOT / "OmniPulse" / "Resources" / f"{locale}.lproj" / "InfoPlist.strings"
+    if not path.exists():
+        raise SystemExit(f"localization contract failed: missing {path.relative_to(ROOT)}")
+    localized = path.read_text(encoding="utf-8")
+    for key in required_permission_keys:
+        if f'"{key}"' not in localized:
+            raise SystemExit(
+                f"localization contract failed: {path.relative_to(ROOT)} missing {key}"
+            )
+
 expected = f"**Versión actual de desarrollo en `main`: {version} (build {build}).**"
 if expected not in readme:
     raise SystemExit("version contract failed: README development version is stale")
