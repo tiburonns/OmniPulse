@@ -22,3 +22,11 @@ La app actual filtra por el UUID OmniPulse, se suscribe a notificaciones, valida
 ## Análisis espectral
 
 OmniPulse conserva canal/frecuencia/ancho cuando están disponibles, separa números de canal iguales entre bandas, excluye DFS potencial por defecto en 5 GHz y sólo genera recomendaciones de 6 GHz cuando existen observaciones reales de esa banda.
+
+
+## Campos Wi-Fi del contrato
+
+- `frequencyMHz`: frecuencia central observada en MHz cuando el sensor puede reportarla.
+- `channelWidthMHz`: ancho de canal observado cuando la fuente puede medirlo de forma fiable.
+- En **6 GHz** las recomendaciones sólo se muestran cuando existen observaciones reales de esa banda.
+- Los canales potencialmente **DFS** de 5 GHz se excluyen de las recomendaciones por defecto.
