@@ -27,7 +27,7 @@
 
 - [ ] WidgetKit con estadísticas locales agregadas.
 - [x] App Intents: abrir Escanear, Historial y Mapa, sin revelar información sensible en Siri.
-- [ ] Companion watchOS para controles, no para escaneo Wi-Fi.
+- [x] Companion watchOS para controles y snapshots del iPhone, sin escaneo Wi-Fi directo desde el reloj.
 
 ## Criterios de salida
 
