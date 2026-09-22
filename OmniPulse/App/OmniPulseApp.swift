@@ -113,33 +113,69 @@ struct OmniPulseApp: App {
                 rssi: device.rssi,
                 seenAt: device.lastSeen,
                 latitude: device.detectionLocation?.latitude,
-                longitude: device.detectionLocation?.longitude
+                longitude: device.detectionLocation?.longitude,
+                fallbackName: device.name.isEmpty ? .bluetoothDevice : nil
             )
         }
         let sensor = sensorBridge.receivedBatches.flatMap { batch in
             batch.payload.observations.map { observation in
                 WatchDetectionSummary(
                     id: "\(batch.payload.sensorID)-\(observation.kind.rawValue)-\(observation.identifier)",
-                    name: observation.name ?? (observation.kind == .wifiNetwork ? "Red oculta" : "Dispositivo BLE"),
-                    transport: observation.kind == .wifiNetwork ? "Wi‑Fi ESP32" : "BLE ESP32",
+                    name: observation.name
+                        ?? (observation.kind == .wifiNetwork
+                            ? "Red oculta"
+                            : "Dispositivo BLE"),
+                    transport: observation.kind == .wifiNetwork
+                        ? "Wi-Fi ESP32"
+                        : "BLE ESP32",
                     rssi: observation.rssi,
                     seenAt: observation.seenAt ?? batch.receivedAt,
                     latitude: batch.detectionLocation?.latitude,
-                    longitude: batch.detectionLocation?.longitude
+                    longitude: batch.detectionLocation?.longitude,
+                    fallbackName: observation.name == nil
+                        ? (observation.kind == .wifiNetwork
+                            ? .hiddenNetwork
+                            : .bluetoothDevice)
+                        : nil
                 )
             }
         }
         let detections = (native + sensor)
             .sorted { $0.seenAt > $1.seenAt }
             .prefix(30)
+        let connection = watchConnectionState(sensorBridge.state)
+
         return WatchAppSnapshot(
             isScanning: scanner.isScanning,
-            isVehicleMode: UserDefaults.standard.string(forKey: "scanDisplayMode") == ScanDisplayMode.vehicle.rawValue,
+            isVehicleMode: UserDefaults.standard.string(
+                forKey: "scanDisplayMode"
+            ) == ScanDisplayMode.vehicle.rawValue,
             connectionStatus: sensorBridge.state.title,
+            connectionState: connection.state,
+            connectionName: connection.name,
             connectedSensorCount: sensorBridge.connectedSensors.count,
             detections: Array(detections),
             updatedAt: .now
         )
+    }
+
+    private static func watchConnectionState(
+        _ state: SensorConnectionState
+    ) -> (state: WatchSensorConnectionState, name: String?) {
+        switch state {
+        case .idle:
+            return (.idle, nil)
+        case .searching:
+            return (.searching, nil)
+        case .connecting(let name):
+            return (.connecting, name)
+        case .connected(let name):
+            return (.connected, name)
+        case .unavailable:
+            return (.unavailable, nil)
+        case .failed:
+            return (.failed, nil)
+        }
     }
 
     private static func handleWatchCommand(
