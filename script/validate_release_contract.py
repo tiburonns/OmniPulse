@@ -58,6 +58,35 @@ for locale in ("en", "es"):
                 f"localization contract failed: {path.relative_to(ROOT)} missing {key}"
             )
 
+watch_snapshot = (ROOT / "Shared/WatchSnapshot.swift").read_text(encoding="utf-8")
+watch_view = (ROOT / "OmniPulseWatch/WatchRootView.swift").read_text(encoding="utf-8")
+roadmap = (ROOT / "docs/ROADMAP.md").read_text(encoding="utf-8")
+
+for token in ["WatchSensorConnectionState", "connectionState", "fallbackName"]:
+    if token not in watch_snapshot:
+        raise SystemExit(f"watchOS contract failed: shared snapshot missing {token}")
+
+if "watchLocalized" not in watch_view:
+    raise SystemExit(
+        "watchOS localization contract failed: WatchRootView is not localizing runtime copy"
+    )
+
+if "- [x] Companion watchOS" not in roadmap:
+    raise SystemExit(
+        "watchOS documentation contract failed: roadmap does not reflect the implemented companion"
+    )
+
+watch_localization_keys = ["Escaneando","Escaneo detenido","Detener","Iniciar","Guardar lote","Recientes (%lld)","Las detecciones del iPhone aparecerán aquí.","Actualizar","Origen","Señal","Visto","Conectando con el iPhone","Conexión con iPhone no disponible","Comando en espera del iPhone","Actualizado","Conectado al iPhone","Esperando al iPhone","%lld ESP32 conectados","Listo para conectar","Buscando sensor","Conectando a %@","Conectado a %@","Bluetooth no disponible","No se pudo conectar"]
+for locale in ("en", "es"):
+    localized = (
+        ROOT / "OmniPulse" / "Resources" / f"{locale}.lproj" / "Localizable.strings"
+    ).read_text(encoding="utf-8")
+    for key in watch_localization_keys:
+        if f'"{key}" =' not in localized:
+            raise SystemExit(
+                f"watchOS localization contract failed: {locale} missing {key}"
+            )
+
 expected = f"**Versión actual de desarrollo en `main`: {version} (build {build}).**"
 if expected not in readme:
     raise SystemExit("version contract failed: README development version is stale")
