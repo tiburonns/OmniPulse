@@ -196,3 +196,4 @@
 "Conectado a %@" = "Connected to %@";
 "Bluetooth no disponible" = "Bluetooth unavailable";
 "No se pudo conectar" = "Could not connect";
+"Dispositivo sin nombre" = "Unnamed device";
