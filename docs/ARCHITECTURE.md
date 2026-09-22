@@ -1,34 +1,43 @@
 # Arquitectura
 
+**[English](ARCHITECTURE.en.md) · Español**
+
 ## Objetivo
 
-OmniPulse registra observaciones de radio cercanas de forma local, explícita y trazable. La primera versión trata al iPhone como central BLE y fuente de ubicación. Un ESP32 opcional amplía la cobertura mediante observaciones agregadas, sin convertir al teléfono en un escáner Wi-Fi de bajo nivel.
+OmniPulse registra observaciones de radio cercanas de forma local y trazable. El iPhone funciona como central BLE y fuente opcional de ubicación. Sensores ESP32/ESP8266 amplían la cobertura con observaciones agregadas.
 
 ```text
 iPhone
   CoreBluetooth ──> BluetoothScanner ─┐
   CoreLocation ──> LocationService ───┼─> SwiftUI ─> SwiftData ─> Historial / Mapa
-  Sensor ESP32 ──> JSON sobre BLE ────┘
+  ESP32 ─────────> JSON sobre BLE ────┤
+  ESP8266 ───────> JSON sobre HTTP ───┘
+                         │
+                         ├─> companion macOS
+                         └─> WatchConnectivity ─> Apple Watch
 ```
 
 ## Capas
 
-| Capa | Responsabilidad |
-| --- | --- |
-| `Services` | Controla permisos y APIs del sistema. No escribe vistas ni depende de SwiftData. |
-| `Models` | Tipos de descubrimiento, registro persistente y contrato del sensor. |
-| `Views` | Presenta estado y pide acciones explícitas: iniciar escaneo, guardar y borrar. |
-| `firmware` | Produce lotes JSON compatibles con el contrato documentado. |
+- `Services`: permisos, radio, conectividad, exportación y APIs del sistema.
+- `Models`: descubrimientos, persistencia, proyectos y contratos.
+- `Views`: presentación y acciones explícitas.
+- `OmniPulseMac`: superficies nativas de macOS.
+- `OmniPulseWatch`: controles remotos y resumen de detecciones.
+- `firmware`: implementaciones de sensores.
 
 ## Decisiones
 
-- **iOS 17 mínimo**: permite usar `@Observable` y SwiftData sin capas de compatibilidad.
-- **Modelo local**: las detecciones no se suben a ningún servicio en esta base.
-- **Ubicación cuando la persona guarda**: el escaneo no inicia GPS automáticamente. El permiso se solicita al pedirlo desde una acción relevante.
-- **BLE del iPhone en primer plano**: se evita declarar modos de segundo plano hasta tener un caso de producto probado y una justificación de batería/privacidad.
-- **Wi-Fi solo por sensor**: iOS no ofrece un escaneo general de redes/dispositivos Wi-Fi a apps comunes; el ESP32 envía resultados agregados mediante el contrato.
+- iOS 17 mínimo.
+- Historial local por defecto; sin backend de OmniPulse.
+- Ubicación bajo permisos del sistema y sólo donde el flujo la requiere.
+- El escaneo BLE del iPhone no se presenta como monitor continuo de escritorio cuando iOS suspende la app.
+- Wi-Fi mediante sensores autorizados.
+- Exportación CSV/PDF iniciada por la persona.
+- App Intents, macOS y watchOS ya forman parte de la base actual.
 
-## Extensiones previstas
+## Pendientes
 
-1. Geocercas y alertas locales, con su propio consentimiento.
-2. WidgetKit, App Intents y watchOS sobre el mismo almacén mediante App Groups, solo después de diseñar migraciones y retención.
+- Endurecer firma/anti-rollback antes de habilitar OTA BLE en builds distribuidas.
+- Añadir WidgetKit después de definir almacenamiento compartido, retención y privacidad.
+- Mantener BLE, ubicación, sensores y WatchConnectivity como gate de hardware independiente de CI.
