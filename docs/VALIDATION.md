@@ -45,6 +45,21 @@ Esta variante omite únicamente la app complementaria Watch del paquete lateral.
 4. Comprobar el borrado por retención y el borrado total.
 5. En iOS 18+, probar los atajos "Iniciar escaneo OmniPulse", "Abrir historial OmniPulse" y "Abrir mapa OmniPulse".
 
+## Prueba con Apple Watch
+
+Esta sección requiere hardware real y una instalación firmada del target completo de Xcode; la IPA pública de AltStore no incluye el companion watchOS.
+
+1. Instalar OmniPulse desde Xcode en un iPhone emparejado con un Apple Watch compatible.
+2. Confirmar que el companion se instala y recibe un snapshot inicial del iPhone.
+3. Iniciar y detener el escaneo desde el reloj y verificar el cambio en el iPhone.
+4. Activar y desactivar **Vehículo** desde el reloj y confirmar el modo correspondiente en el iPhone.
+5. Con detecciones presentes, usar **Guardar lote** y verificar que aparecen en el historial del iPhone sin duplicados.
+6. Abrir una detección reciente en el reloj y comprobar nombre, origen, RSSI, hora y ubicación cuando exista.
+7. Cambiar el idioma del Apple Watch entre español e inglés y confirmar que controles, estados y placeholders se localizan en el reloj.
+8. Alejar temporalmente el reloj del iPhone, enviar un comando, volver a ponerlos en alcance y comprobar la entrega diferida mediante WatchConnectivity.
+
+Pass: el companion controla únicamente las acciones documentadas, conserva la sincronización con el iPhone, no intenta escanear Wi-Fi directamente y no muestra estados fijos en un idioma incorrecto.
+
 ## Prueba con ESP32
 
 1. Compilar y cargar `firmware/esp32-omnipulse` con PlatformIO.
