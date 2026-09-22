@@ -2,18 +2,30 @@ import Foundation
 import Observation
 import WatchConnectivity
 
+func watchLocalized(_ key: String) -> String {
+    NSLocalizedString(key, comment: "")
+}
+
+func watchLocalizedFormat(_ key: String, _ arguments: CVarArg...) -> String {
+    String(
+        format: watchLocalized(key),
+        locale: .current,
+        arguments: arguments
+    )
+}
+
 @MainActor
 @Observable
 final class WatchConnectivityClient: NSObject {
     private(set) var snapshot: WatchAppSnapshot = .empty
-    private(set) var status = "Conectando con el iPhone"
+    private(set) var status = watchLocalized("Conectando con el iPhone")
 
     @ObservationIgnored private var session: WCSession?
 
     override init() {
         super.init()
         guard WCSession.isSupported() else {
-            status = "Conexión con iPhone no disponible"
+            status = watchLocalized("Conexión con iPhone no disponible")
             return
         }
         let session = WCSession.default
@@ -33,7 +45,7 @@ final class WatchConnectivityClient: NSObject {
             }
         } else {
             session.transferUserInfo(payload)
-            status = "Comando en espera del iPhone"
+            status = watchLocalized("Comando en espera del iPhone")
         }
     }
 
@@ -43,7 +55,7 @@ final class WatchConnectivityClient: NSObject {
         guard let data = payload["snapshot"] as? Data,
               let decoded = try? JSONDecoder().decode(WatchAppSnapshot.self, from: data) else { return }
         snapshot = decoded
-        status = "Actualizado"
+        status = watchLocalized("Actualizado")
     }
 }
 
@@ -54,7 +66,10 @@ extension WatchConnectivityClient: WCSessionDelegate {
         error: Error?
     ) {
         Task { @MainActor in
-            self.status = error?.localizedDescription ?? (activationState == .activated ? "Conectado al iPhone" : "Esperando al iPhone")
+            self.status = error?.localizedDescription
+                ?? (activationState == .activated
+                    ? watchLocalized("Conectado al iPhone")
+                    : watchLocalized("Esperando al iPhone"))
             self.refresh()
         }
     }
