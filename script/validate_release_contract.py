@@ -76,7 +76,7 @@ if "- [x] Companion watchOS" not in roadmap:
         "watchOS documentation contract failed: roadmap does not reflect the implemented companion"
     )
 
-watch_localization_keys = ["Escaneando","Escaneo detenido","Detener","Iniciar","Guardar lote","Recientes (%lld)","Las detecciones del iPhone aparecerán aquí.","Actualizar","Origen","Señal","Visto","Conectando con el iPhone","Conexión con iPhone no disponible","Comando en espera del iPhone","Actualizado","Conectado al iPhone","Esperando al iPhone","%lld ESP32 conectados","Listo para conectar","Buscando sensor","Conectando a %@","Conectado a %@","Bluetooth no disponible","No se pudo conectar"]
+watch_localization_keys = ["Escaneando","Escaneo detenido","Detener","Iniciar","Guardar lote","Recientes (%lld)","Las detecciones del iPhone aparecerán aquí.","Actualizar","Origen","Señal","Visto","Conectando con el iPhone","Conexión con iPhone no disponible","Comando en espera del iPhone","Actualizado","Conectado al iPhone","Esperando al iPhone","%lld ESP32 conectados","Listo para conectar","Buscando sensor","Conectando a %@","Conectado a %@","Bluetooth no disponible","No se pudo conectar","Dispositivo sin nombre"]
 for locale in ("en", "es"):
     localized = (
         ROOT / "OmniPulse" / "Resources" / f"{locale}.lproj" / "Localizable.strings"
