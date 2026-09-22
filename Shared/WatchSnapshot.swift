@@ -3,6 +3,7 @@ import Foundation
 enum WatchDetectionFallbackName: String, Codable, Hashable, Sendable {
     case hiddenNetwork
     case bluetoothDevice
+    case unnamedDevice
 }
 
 struct WatchDetectionSummary: Codable, Hashable, Identifiable, Sendable {
