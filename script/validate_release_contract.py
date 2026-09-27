@@ -39,6 +39,10 @@ for relative in [
             f"version contract failed: {relative} has build "
             f"{info.get('CFBundleVersion')} instead of {build}"
         )
+    if info.get("ITSAppUsesNonExemptEncryption") is not False:
+        raise SystemExit(
+            f"export compliance contract failed: {relative} must declare no non-exempt encryption"
+        )
 
 required_permission_keys = [
     "NSBluetoothAlwaysUsageDescription",
@@ -120,6 +124,37 @@ if semver(published) > semver(version):
 
 if "DEVELOPMENT_TEAM" in project:
     raise SystemExit("build contract failed: project.yml must not hardcode an Apple team")
+
+if "CODE_SIGN_ENTITLEMENTS: OmniPulse/Resources/OmniPulse.entitlements" not in project:
+    raise SystemExit(
+        "capability contract failed: iOS target must embed OmniPulse.entitlements"
+    )
+
+with (ROOT / "OmniPulse/Resources/PrivacyInfo.xcprivacy").open("rb") as handle:
+    privacy_manifest = plistlib.load(handle)
+if privacy_manifest.get("NSPrivacyTracking") is not False:
+    raise SystemExit("privacy contract failed: tracking must be false")
+reasons = {
+    item.get("NSPrivacyAccessedAPIType"): set(item.get("NSPrivacyAccessedAPITypeReasons", []))
+    for item in privacy_manifest.get("NSPrivacyAccessedAPITypes", [])
+}
+if "CA92.1" not in reasons.get("NSPrivacyAccessedAPICategoryUserDefaults", set()):
+    raise SystemExit("privacy contract failed: UserDefaults CA92.1 reason is missing")
+
+for path in [ROOT / "docs/TESTFLIGHT.md", ROOT / "docs/TESTFLIGHT.en.md"]:
+    if not path.exists():
+        raise SystemExit(f"release contract failed: missing {path.relative_to(ROOT)}")
+
+workflow = (ROOT / ".github/workflows/ios.yml").read_text(encoding="utf-8")
+for token in [
+    "Build Release iOS Simulator",
+    "Build Release iPhoneOS",
+    "Build Release macOS",
+    "Build Release watchOS",
+    "SWIFT_TREAT_WARNINGS_AS_ERRORS=YES",
+]:
+    if token not in workflow:
+        raise SystemExit(f"release CI contract failed: missing {token}")
 
 analyzer = (ROOT / "OmniPulse/Services/WiFiChannelAnalyzer.swift").read_text(encoding="utf-8")
 payload = (ROOT / "OmniPulse/Models/SensorPayload.swift").read_text(encoding="utf-8")
