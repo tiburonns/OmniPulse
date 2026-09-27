@@ -66,4 +66,4 @@ La app realiza descubrimiento BLE, persistencia local, conexión GATT con sensor
 
 ## Privacidad, seguridad y licencia
 
-Consulta [Privacidad](docs/PRIVACY.md), [Seguridad](SECURITY.md) y [Licencia](LICENSE). El código se publica para inspección y evaluación; no se concede permiso general para redistribuirlo o comercializar derivados.
+Consulta [Privacidad](docs/PRIVACY.md), [Seguridad](SECURITY.md), [preflight de TestFlight](docs/TESTFLIGHT.md) y [Licencia](LICENSE). El código se publica para inspección y evaluación; no se concede permiso general para redistribuirlo o comercializar derivados.
