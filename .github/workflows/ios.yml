@@ -11,6 +11,16 @@ jobs:
     runs-on: macos-15
     steps:
       - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Validate Apple resources
+        run: |
+          plutil -lint OmniPulse/Resources/Info.plist
+          plutil -lint OmniPulse/Resources/PrivacyInfo.xcprivacy
+          plutil -lint OmniPulse/Resources/OmniPulse.entitlements
+          plutil -lint OmniPulse/Resources/en.lproj/InfoPlist.strings
+          plutil -lint OmniPulse/Resources/es.lproj/InfoPlist.strings
+          plutil -lint OmniPulseMac/Info.plist
+          plutil -lint OmniPulseWatch/Info.plist
+
       - name: Validate release contract
         run: python3 script/validate_release_contract.py
       - name: Install pinned XcodeGen

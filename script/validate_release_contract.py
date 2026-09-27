@@ -125,6 +125,22 @@ if semver(published) > semver(version):
 if "DEVELOPMENT_TEAM" in project:
     raise SystemExit("build contract failed: project.yml must not hardcode an Apple team")
 
+if "CODE_SIGN_ENTITLEMENTS: OmniPulse/Resources/OmniPulse.entitlements" not in project:
+    raise SystemExit(
+        "capability contract failed: iOS target must embed OmniPulse.entitlements"
+    )
+
+with (ROOT / "OmniPulse/Resources/PrivacyInfo.xcprivacy").open("rb") as handle:
+    privacy_manifest = plistlib.load(handle)
+if privacy_manifest.get("NSPrivacyTracking") is not False:
+    raise SystemExit("privacy contract failed: tracking must be false")
+reasons = {
+    item.get("NSPrivacyAccessedAPIType"): set(item.get("NSPrivacyAccessedAPITypeReasons", []))
+    for item in privacy_manifest.get("NSPrivacyAccessedAPITypes", [])
+}
+if "CA92.1" not in reasons.get("NSPrivacyAccessedAPICategoryUserDefaults", set()):
+    raise SystemExit("privacy contract failed: UserDefaults CA92.1 reason is missing")
+
 for path in [ROOT / "docs/TESTFLIGHT.md", ROOT / "docs/TESTFLIGHT.en.md"]:
     if not path.exists():
         raise SystemExit(f"release contract failed: missing {path.relative_to(ROOT)}")

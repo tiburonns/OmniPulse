@@ -24,8 +24,9 @@ The Apple job validates the release contract, reproducible XcodeGen project, iOS
 3. Open `OmniPulse.xcodeproj`.
 4. Select the paid Apple Developer Team.
 5. Confirm iOS and Watch bundle identifiers.
-6. Product > Archive for Generic iOS Device.
-7. Organizer > Validate App.
-8. Upload to App Store Connect and start Internal Testing.
+6. In the Apple Developer portal, ensure **Access WiFi Information** is enabled for the iOS App ID and regenerate the App Store provisioning profile so it contains the entitlement.
+7. Product > Archive for Generic iOS Device.
+8. Organizer > Validate App.
+9. Upload to App Store Connect and start Internal Testing.
 
 OmniPulse does not implement its own cryptographic encryption in the app; its plist declares no non-exempt encryption. System networking protections remain platform-provided where applicable.
