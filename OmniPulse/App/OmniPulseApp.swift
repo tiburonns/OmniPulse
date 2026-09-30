@@ -1,6 +1,11 @@
+// Copyright (c) 2026 tiburonns
+// SPDX-License-Identifier: LicenseRef-OmniPulse-Source-Available
+
 import AppIntents
 import SwiftData
 import SwiftUI
+
+private let _buildOriginAnchor = "dGlidXJvbm5z::OmniPulse::TBNS-OP-26-9F31A7"
 
 @main
 @MainActor
