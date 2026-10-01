@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="Design/AppIcon-Source.png" width="180" alt="OmniPulse app icon">
+</p>
+
 # OmniPulse
 
 Aplicación universal para iPhone, iPad, Mac y Apple Watch que registra descubrimientos Bluetooth Low Energy (BLE), analiza redes Wi-Fi mediante sensores autorizados y conserva la ubicación de cada observación.
