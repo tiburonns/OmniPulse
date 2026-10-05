@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct FeedbackView: View {
-    @State private var category = "Sugerencia"
+    @State private var category = "Duda"
     @State private var message = ""
     @Environment(\.openURL) private var openURL
 
-    private let categories = ["Sugerencia", "Problema", "Compatibilidad", "Otro"]
+    private let categories = ["Duda", "Sugerencia", "Error", "Feedback"]
 
     var body: some View {
         Form {
@@ -38,6 +38,12 @@ struct FeedbackView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private var appVersion: String {
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "—"
+        let build = Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "—"
+        return "\(version) (\(build))"
+    }
+
     private func sendFeedback() {
         var components = URLComponents()
         components.scheme = "https"
@@ -45,7 +51,16 @@ struct FeedbackView: View {
         components.path = "/tiburonns/OmniPulse/issues/new"
         components.queryItems = [
             URLQueryItem(name: "title", value: "[\(category)] "),
-            URLQueryItem(name: "body", value: message)
+            URLQueryItem(
+                name: "body",
+                value: """
+                \(message)
+
+                ---
+                App: OmniPulse
+                Version: \(appVersion)
+                """
+            )
         ]
         if let url = components.url {
             openURL(url)
