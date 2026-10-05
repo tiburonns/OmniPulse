@@ -33,6 +33,12 @@ struct FeedbackView: View {
             } footer: {
                 Text("Se abrirá GitHub para que revises y publiques el comentario.")
             }
+
+            Section("Apoyar el desarrollo") {
+                Link(destination: URL(string: "https://www.patreon.com/tiburonns")!) {
+                    Label("Apoyar en Patreon", systemImage: "heart.fill")
+                }
+            }
         }
         .navigationTitle("Soporte y feedback")
         .navigationBarTitleDisplayMode(.inline)
