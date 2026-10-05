@@ -59,3 +59,16 @@ All features are free; there is no paid plan or subscription.
 ## Privacy, security, and license
 
 See [Privacy](docs/PRIVACY.en.md), [Security](SECURITY.en.md), and [License](LICENSE).
+
+## Contact, support, and feedback
+
+Have a **question**, **suggestion**, found a **bug**, or want to share **feedback** about OmniPulse? Use the project's GitHub Issues form:
+
+**[Open the contact and feedback form](https://github.com/tiburonns/OmniPulse/issues/new?template=feedback.yml)**
+
+**[❤️ Support development on Patreon](https://www.patreon.com/tiburonns)**
+
+Choose the category that best fits: **Question, Suggestion, Bug, Feedback, Compatibility, or Other**. Include the app version, device/OS, and reproduction steps when relevant.
+
+Do not post passwords, tokens, keys, private addresses, or other sensitive personal information. For security vulnerabilities, follow the process in `SECURITY.md` when available.
+

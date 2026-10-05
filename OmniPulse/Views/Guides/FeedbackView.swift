@@ -5,7 +5,7 @@ struct FeedbackView: View {
     @State private var message = ""
     @Environment(\.openURL) private var openURL
 
-    private let categories = ["Sugerencia", "Problema", "Compatibilidad", "Otro"]
+    private let categories = ["Duda", "Sugerencia", "Error", "Feedback", "Compatibilidad", "Otro"]
 
     var body: some View {
         Form {
@@ -33,9 +33,26 @@ struct FeedbackView: View {
             } footer: {
                 Text("Se abrirá GitHub para que revises y publiques el comentario.")
             }
+
+            Section("Apoyar el desarrollo") {
+                Link(destination: URL(string: "https://www.patreon.com/tiburonns")!) {
+                    Label("Apoyar en Patreon", systemImage: "heart.fill")
+                }
+            }
         }
-        .navigationTitle("Sugerencias")
+        .navigationTitle("Soporte y feedback")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var formCategory: String {
+        switch category {
+        case "Duda": "Question / Duda"
+        case "Sugerencia": "Suggestion / Sugerencia"
+        case "Error": "Bug / Error"
+        case "Feedback": "Feedback"
+        case "Compatibilidad": "Compatibility / Compatibilidad"
+        default: "Other / Otro"
+        }
     }
 
     private func sendFeedback() {
@@ -44,8 +61,10 @@ struct FeedbackView: View {
         components.host = "github.com"
         components.path = "/tiburonns/OmniPulse/issues/new"
         components.queryItems = [
+            URLQueryItem(name: "template", value: "feedback.yml"),
             URLQueryItem(name: "title", value: "[\(category)] "),
-            URLQueryItem(name: "body", value: message)
+            URLQueryItem(name: "category", value: formCategory),
+            URLQueryItem(name: "message", value: message)
         ]
         if let url = components.url {
             openURL(url)
