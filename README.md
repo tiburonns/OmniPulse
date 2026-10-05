@@ -71,3 +71,14 @@ La app realiza descubrimiento BLE, persistencia local, conexión GATT con sensor
 ## Privacidad, seguridad y licencia
 
 Consulta [Privacidad](docs/PRIVACY.md), [Seguridad](SECURITY.md), [preflight de TestFlight](docs/TESTFLIGHT.md) y [Licencia](LICENSE). El código se publica para inspección y evaluación; no se concede permiso general para redistribuirlo o comercializar derivados.
+
+## Contacto, soporte y feedback
+
+¿Tienes una **duda**, **sugerencia**, encontraste un **error** o quieres compartir **feedback** sobre OmniPulse? Usa el formulario de GitHub Issues del proyecto:
+
+**[Abrir formulario de contacto y feedback](https://github.com/tiburonns/OmniPulse/issues/new?template=feedback.yml)**
+
+Selecciona la categoría que mejor corresponda: **Duda, Sugerencia, Error, Feedback, Compatibilidad u Otro**. Incluye la versión de la app, dispositivo/sistema y pasos para reproducir el problema cuando aplique.
+
+No publiques contraseñas, tokens, claves, direcciones privadas ni otra información personal sensible. Para vulnerabilidades de seguridad, utiliza el proceso indicado en `SECURITY.md` cuando esté disponible.
+
