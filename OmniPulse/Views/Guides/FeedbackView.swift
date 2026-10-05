@@ -44,6 +44,17 @@ struct FeedbackView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    private var formCategory: String {
+        switch category {
+        case "Duda": "Question / Duda"
+        case "Sugerencia": "Suggestion / Sugerencia"
+        case "Error": "Bug / Error"
+        case "Feedback": "Feedback"
+        case "Compatibilidad": "Compatibility / Compatibilidad"
+        default: "Other / Otro"
+        }
+    }
+
     private func sendFeedback() {
         var components = URLComponents()
         components.scheme = "https"
@@ -52,6 +63,7 @@ struct FeedbackView: View {
         components.queryItems = [
             URLQueryItem(name: "template", value: "feedback.yml"),
             URLQueryItem(name: "title", value: "[\(category)] "),
+            URLQueryItem(name: "category", value: formCategory),
             URLQueryItem(name: "message", value: message)
         ]
         if let url = components.url {
