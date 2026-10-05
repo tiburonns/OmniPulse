@@ -5,7 +5,7 @@ struct FeedbackView: View {
     @State private var message = ""
     @Environment(\.openURL) private var openURL
 
-    private let categories = ["Sugerencia", "Problema", "Compatibilidad", "Otro"]
+    private let categories = ["Duda", "Sugerencia", "Error", "Feedback", "Compatibilidad", "Otro"]
 
     var body: some View {
         Form {
@@ -34,7 +34,7 @@ struct FeedbackView: View {
                 Text("Se abrirá GitHub para que revises y publiques el comentario.")
             }
         }
-        .navigationTitle("Sugerencias")
+        .navigationTitle("Soporte y feedback")
         .navigationBarTitleDisplayMode(.inline)
     }
 
@@ -44,8 +44,9 @@ struct FeedbackView: View {
         components.host = "github.com"
         components.path = "/tiburonns/OmniPulse/issues/new"
         components.queryItems = [
+            URLQueryItem(name: "template", value: "feedback.yml"),
             URLQueryItem(name: "title", value: "[\(category)] "),
-            URLQueryItem(name: "body", value: message)
+            URLQueryItem(name: "message", value: message)
         ]
         if let url = components.url {
             openURL(url)
