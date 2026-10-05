@@ -68,6 +68,12 @@ project.yml                Fuente reproducible del .xcodeproj
 
 La app realiza descubrimiento BLE, persistencia local, conexión GATT con sensores ESP32 y recepción HTTP local desde ESP8266. Cada lote se muestra para revisión antes de importarse. Las versiones iOS, macOS y watchOS forman parte del mismo proyecto reproducible de XcodeGen. Todas las funciones son gratuitas y no existe plan de pago ni suscripción.
 
+## Contacto y feedback
+
+Para **dudas, sugerencias, errores o feedback general**, abre **Ajustes → Ayuda → Sugerencias y comentarios** dentro de OmniPulse. La app prepara un Issue de GitHub y abre el navegador para que puedas revisar el contenido antes de publicarlo.
+
+También puedes usar directamente [GitHub Issues](https://github.com/tiburonns/OmniPulse/issues). No incluyas contraseñas, ubicaciones precisas, direcciones MAC, credenciales ni otra información sensible. Las vulnerabilidades de seguridad deben enviarse mediante **Security → Report a vulnerability** en GitHub, no como un Issue público.
+
 ## Privacidad, seguridad y licencia
 
 Consulta [Privacidad](docs/PRIVACY.md), [Seguridad](SECURITY.md), [preflight de TestFlight](docs/TESTFLIGHT.md) y [Licencia](LICENSE). El código se publica para inspección y evaluación; no se concede permiso general para redistribuirlo o comercializar derivados.
