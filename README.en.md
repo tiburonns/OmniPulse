@@ -58,4 +58,6 @@ All features are free; there is no paid plan or subscription.
 
 ## Privacy, security, and license
 
+Open **Settings → Help → Suggestions and feedback** to prepare a GitHub issue. Review and publish it on GitHub; this flow does not send email.
+
 See [Privacy](docs/PRIVACY.en.md), [Security](SECURITY.en.md), and [License](LICENSE).

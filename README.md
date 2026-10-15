@@ -70,4 +70,6 @@ La app realiza descubrimiento BLE, persistencia local, conexión GATT con sensor
 
 ## Privacidad, seguridad y licencia
 
+En **Ajustes → Ayuda → Sugerencias y comentarios**, OmniPulse abre GitHub Issues para que revises y publiques el reporte. Este flujo no envía correo directamente.
+
 Consulta [Privacidad](docs/PRIVACY.md), [Seguridad](SECURITY.md), [preflight de TestFlight](docs/TESTFLIGHT.md) y [Licencia](LICENSE). El código se publica para inspección y evaluación; no se concede permiso general para redistribuirlo o comercializar derivados.
