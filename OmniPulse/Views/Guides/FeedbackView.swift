@@ -31,7 +31,7 @@ struct FeedbackView: View {
                 }
                 .disabled(message.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             } footer: {
-                Text("Se abrirá GitHub para que revises y publiques el comentario.")
+                Text("Se abrirá GitHub para que revises y publiques el comentario. Esto no envía un correo.")
             }
         }
         .navigationTitle("Sugerencias")
